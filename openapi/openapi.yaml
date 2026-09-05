@@ -1,0 +1,720 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Marketplace API
+  description: E-commerce platform that allows users to buy/sell goods
+  contact:
+    name: Denys
+servers:
+  - url: http://api.example.com/v1
+tags:
+  - name: user
+  - name: product
+  - name: order
+  - name: sale
+paths:
+  /users:
+    post:
+      # TODO: add auth
+      summary: Register new user
+      description: Register new user
+      operationId: registerUser
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblem'
+  /products:
+    post:
+      # TODO: add idempotency???
+      summary: Creates new product
+      description: Creates new product
+      operationId: createProduct
+      tags:
+        - product
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: |
+            Client sends Idempotency-Key header to prevent duplicate product
+            creation.
+            Same key + same body –> 201 + Idempotency-Replay: true
+            Same key + body mismatch –> 422
+            Same key and response still in flight –> 409
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+      responses:
+        '201':
+          # TODO: add Location header
+          description: Created
+          headers:
+            Idempotency-Replay:
+              schema:
+                type: boolean
+              description: |
+                Client tries to repeat product creation using the
+                same Idempotency-Key and body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblem'
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    get:
+      summary: Get all products
+      description: Get all products
+      operationId: listProducts
+      tags:
+        - product
+      parameters:
+        # TODO: add limit
+        - name: next_cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Opaque token used for pagination
+      responses:
+        '200':
+          description: Get paginated products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    $ref: '#/components/schemas/ProductResponse'
+                  next_cursor:
+                    type: string
+                    nullable: true
+                    description: |
+                      Client sends next_cursor in the query to get
+                      next page. No cursor = no next pages.
+                required:
+                  - items
+        '400':
+          description: Broken cursor
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /products/{productId}:
+    get:
+      summary: Get product by id
+      description: Get product by id
+      operationId: viewProductWithId
+      tags:
+        - product
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Single product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '404':
+          description: Product doesn't exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    patch:
+      # TODO: requires auth check
+      summary: Update product by id
+      description: Update product by id
+      operationId: modifyProductWithId
+      tags:
+        - product
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdate'
+      responses:
+        '200':
+          description: Single product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          description: Product is invalid
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblem'
+        '404':
+          description: Product doesn't exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      # TODO: requires auth check
+      summary: Delete product by id
+      description: Update product by id
+      operationId: deleteProductWithId
+      tags:
+        - product
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Product is suseccfuly deleted
+        '404':
+          description: Product doesn't exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /orders:
+    get:
+      # TODO: add pagination
+      # TODO: add auth
+      summary: Get all orders (purchases)
+      description: Get all orders
+      operationId: listOrders
+      tags:
+        - order
+      responses:
+        '200':
+          description: Response with orders list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    $ref: '#/components/schemas/Order'
+                required:
+                  - items
+  /orders/{orderId}:
+    # TODO: add cancel operation
+    get:
+      # TODO: add auth
+      summary: Get order (purchases) by id
+      description: Get order by id
+      operationId: viewOrderWithId
+      tags:
+        - order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Response with order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Order doesn't exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /sales:
+    get:
+      # TODO: add pagination
+      # TODO: add auth
+      summary: Get all sales
+      description: Get all sales
+      operationId: listSales
+      tags:
+        - sale
+      responses:
+        '200':
+          description: Response with sales list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    $ref: '#/components/schemas/Order'
+                required:
+                  - items
+  /sales/{orderId}:
+    get:
+      # TODO: add auth
+      summary: Get all sales
+      description: Get all sales
+      operationId: viewSaleWithId
+      tags:
+        - sale
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Response with sale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Sale doesn't exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /checkout:
+    get:
+      # TODO: requires auth
+      summary: Get prepared checkout data
+      description: Get prepared checkout data
+      operationId: viewCheckout
+      tags:
+        - order
+      responses:
+        '200':
+          description: Checkout with total price and products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    minimum: 0
+                    description: Total price in minor units
+                  currency:
+                    type: string
+                    description: Total price currency
+                  qty:
+                    type: integer
+                    minimum: 1
+                    description: Products quantity
+                  details:
+                    description: List of products grouped by orders
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        products:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              price:
+                                type: integer
+                                minimum: 0
+                                description: Product price in minor units
+                              qty:
+                                type: integer
+                                minimum: 0
+                                description: Products quantity
+                              name:
+                                type: string
+                                description: Product name
+                              productId:
+                                type: string
+                                format: uuid
+                            required:
+                              - price
+                              - qty
+                              - name
+                              - productId
+                required:
+                  - total
+                  - currency
+                  - qty
+                  - details
+        '400':
+          description: Use hasn't selected any products
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    post:
+      summary: Confirm checkout
+      description: Confirm checkout
+      operationId: submitCheckout
+      tags:
+        - order
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: |
+            Client sends Idempotency-Key header to prevent duplicate order
+            creation.
+            Same key + same body –> 201 + Idempotency-Replay: true
+            Same key + body mismatch –> 422
+            Same key and response still in flight –> 409
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: Distinct orders for each seller
+              type: object
+              properties:
+                orders:
+                  description: Products grouped by order
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      products:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            productId:
+                              type: string
+                              format: uuid
+                            price:
+                              type: integer
+                              minimum: 0
+                              description: Product price per unit
+                            qty:
+                              type: integer
+                              minimum: 1
+                              description: Products quantity
+                          required:
+                            - productId
+                            - price
+                            - qty
+                    required:
+                      - products
+              required:
+                - orders
+      responses:
+        '201':
+          description: Successfully created orders
+          headers:
+            Idempotency-Replay:
+              schema:
+                type: boolean
+              description: |
+                Client tries to repeat checkout using the
+                same Idempotency-Key and body
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    Problem:
+      type: object
+      properties:
+        title:
+          type: string
+          description: A short human-readable title of the problem
+        detail:
+          type: string
+          description: A human-readable explanation of the problem
+        status:
+          type: integer
+          description: HTTP status code
+          minimum: 100
+          maximum: 599
+        type:
+          type: string
+          format: uri
+          description: A URI that identifies problem type
+          default: auto:blank
+        instance:
+          type: string
+          format: uri
+          description: An endpoint where the problem has occurred
+      required:
+        - title
+        - detail
+        - status
+        - type
+        - instance
+    ValidationProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          properties:
+            errors:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  rules:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - field
+                  - rules
+          required:
+            - errors
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+        username:
+          type: string
+      required:
+        - email
+        - username
+    Product:
+      # TODO: add images
+      description: Base product schema
+      type: object
+      properties:
+        productId:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          example: Silent Hill HD Collection (Sony PlayStation 3, 2012)
+        description:
+          type: string
+          example: |
+            Experience the two classic Silent Hill titles previously released on
+            PlayStation 2, Silent Hill 2 & Silent Hill 3,
+            that defined the Survival Horror genre in its early inception.
+            Silent Hill 2 & Silent Hill 3 critical acclaim from the previous console generation.
+        price:
+          type: integer
+          minimum: 0
+          description: Price in minor units (e.g. cents)
+          example: 2390
+        currency:
+          type: string
+          example: USD
+        active:
+          type: boolean
+          example: true
+    ProductResponse:
+      description: Product schema for response
+      allOf:
+        - $ref: '#/components/schemas/Product'
+      required:
+        - name
+        - description
+        - price
+        - currency
+    ProductCreate:
+      description: Product schema for creation
+      allOf:
+        - $ref: '#/components/schemas/Product'
+      required:
+        - name
+        - description
+        - price
+        - currency
+    ProductUpdate:
+      description: Product schema for update
+      allOf:
+        - $ref: '#/components/schemas/Product'
+    Order:
+      description: Order schema
+      allOf:
+        - type: object
+          properties:
+            orderId:
+              type: string
+              format: uuid
+              readOnly: true
+            orderType:
+              type: string
+              enum:
+                - purchase
+                - sale
+              description: 'Type of order: sale or purchase'
+            total:
+              type: integer
+              minimum: 0
+              description: Total price in minor units (e.g., cents)
+              example: 45000
+            currency:
+              type: string
+              description: Total price currency (e.g., USD)
+            status:
+              type: string
+              description: Order status (e.g., pending, processed, delivered)
+            createdAt:
+              type: integer
+              readOnly: true
+              format: date-time
+              description: Order creation timestamp
+            details:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderItem'
+            seller:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+          required:
+            - orderId
+            - orderType
+            - total
+            - currency
+            - status
+            - details
+            - seller
+            - createdAt
+        - oneOf:
+            - $ref: '#/components/schemas/SellerOrder'
+            - $ref: '#/components/schemas/BuyerOrder'
+          discriminator:
+            propertyName: orderType
+            mapping:
+              sale: '#/components/schemas/SellerOrder'
+              purchase: '#/components/schemas/BuyerOrder'
+    OrderItem:
+      description: Specific product in the order
+      type: object
+      properties:
+        qty:
+          type: integer
+          minimum: 1
+          description: Ordered quantity
+        price:
+          type: integer
+          minimum: 0
+          description: Price per single product
+        currency:
+          type: string
+          description: Product price currency
+        product:
+          # TODO: return less details
+          $ref: '#/components/schemas/ProductResponse'
+      required:
+        - qty
+        - price
+        - currency
+        - product
+    SellerOrder:
+      type: object
+      properties:
+        orderType:
+          type: string
+          enum:
+            - sale
+        buyer:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+            name:
+              type: string
+      required:
+        - orderType
+        - buyer
+    BuyerOrder:
+      type: object
+      properties:
+        orderType:
+          type: string
+          enum:
+            - purchase
+        seller:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+            name:
+              type: string
+      required:
+        - orderType
+        - seller
