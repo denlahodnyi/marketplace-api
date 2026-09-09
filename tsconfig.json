@@ -1,22 +1,22 @@
 {
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "declaration": false,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "incremental": true,
+    "isolatedModules": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "declaration": false,
+    "outDir": "./dist",
     "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ES2023",
-    "sourceMap": true,
-    "incremental": true,
+    "resolvePackageJsonExports": true,
     "skipLibCheck": true,
+    "sourceMap": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "outDir": "./dist",
+    "target": "es2025",
     "types": ["vitest/globals", "node"]
   }
 }
