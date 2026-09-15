@@ -28,7 +28,7 @@ export class AppController implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     this.pool = new pg.Pool({
       host: 'db',
-      port: this.config.get('DB_PORT'),
+      port: 5432,
       database: this.config.get('DB_NAME'),
       user: 'app_user',
       password: async () => (await readFile(SECRET_FILE, 'utf8')).trim(),
