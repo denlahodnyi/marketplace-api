@@ -7,6 +7,9 @@ export const envSchema = z.object({
   DB_USER: z.string().min(1),
   DB_PASSWORD: z.string().min(1),
   DB_NAME: z.string().min(1),
+  DB_PORT: z.coerce.number().int(),
+  DB_HOST: z.string(),
+  DB_URL: z.url({ protocol: /^postgresql$/ }),
 });
 
 export type Env = z.infer<typeof envSchema>;
