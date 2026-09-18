@@ -108,16 +108,16 @@ BEGIN
     -- Root categories are inserted first, followed by children.
     INSERT INTO categories (category_id, parent_category_id, name)
     VALUES
-        (gen_random_uuid(), NULL, 'Електроніка'),
-        (gen_random_uuid(), NULL, 'Одяг та взуття'),
-        (gen_random_uuid(), NULL, 'Дім і сад'),
-        (gen_random_uuid(), NULL, 'Спорт та відпочинок'),
-        (gen_random_uuid(), NULL, 'Транспорт'),
-        (gen_random_uuid(), NULL, 'Книги та хобі'),
-        (gen_random_uuid(), NULL, 'Дитячі товари'),
-        (gen_random_uuid(), NULL, 'Побутова техніка'),
-        (gen_random_uuid(), NULL, 'Інструменти'),
-        (gen_random_uuid(), NULL, 'Інше');
+        (uuidv7(), NULL, 'Електроніка'),
+        (uuidv7(), NULL, 'Одяг та взуття'),
+        (uuidv7(), NULL, 'Дім і сад'),
+        (uuidv7(), NULL, 'Спорт та відпочинок'),
+        (uuidv7(), NULL, 'Транспорт'),
+        (uuidv7(), NULL, 'Книги та хобі'),
+        (uuidv7(), NULL, 'Дитячі товари'),
+        (uuidv7(), NULL, 'Побутова техніка'),
+        (uuidv7(), NULL, 'Інструменти'),
+        (uuidv7(), NULL, 'Інше');
 
     -- Add one level of child categories.
     FOR v_i IN 1..10 LOOP
@@ -131,7 +131,7 @@ BEGIN
 
         INSERT INTO categories (category_id, parent_category_id, name)
         VALUES
-            (gen_random_uuid(), v_category_id,
+            (uuidv7(), v_category_id,
              CASE v_i
                  WHEN 1 THEN 'Смартфони та аксесуари'
                  WHEN 2 THEN 'Чоловічий та жіночий одяг'
@@ -205,7 +205,7 @@ BEGIN
                 user_id, email, name, phone, user_role
             )
             VALUES (
-                gen_random_uuid(),
+                uuidv7(),
                 v_email,
                 v_first_name || ' ' || v_last_name,
                 NULL,
@@ -222,7 +222,7 @@ BEGIN
             user_id, email, name, phone, user_role
         )
         VALUES (
-            gen_random_uuid(),
+            uuidv7(),
             'admin' || v_i || '@example.com',
             CASE v_i
                 WHEN 1 THEN 'Адміністратор Олег'
@@ -260,7 +260,7 @@ BEGIN
     -- Auction listings are populated later.
     -- ------------------------------------------------------------
     FOR v_i IN 1..v_listing_count LOOP
-        v_listing_id := gen_random_uuid();
+        v_listing_id := uuidv7();
 
         -- Cycle through all categories instead of repeatedly sorting/selecting
         -- a random category. Modulo converts the listing number into a category index.
@@ -386,7 +386,7 @@ BEGIN
 
         EXIT WHEN NOT FOUND;
 
-        v_auc_id := gen_random_uuid();
+        v_auc_id := uuidv7();
 
         INSERT INTO auctions (
             auc_id,
@@ -434,7 +434,7 @@ BEGIN
         IF v_i % 10 <> 0 THEN
             -- Two bids per auction.
             FOR v_j IN 1..2 LOOP
-                v_bid_id := gen_random_uuid();
+                v_bid_id := uuidv7();
 
                 -- +7 shifts the deterministic customer sequence so auction bidders
                 -- are not always the same customer as the auction's seller.
@@ -519,7 +519,7 @@ BEGIN
             offer_id, listing_id, offered_by, price, status
         )
         VALUES (
-            gen_random_uuid(),
+            uuidv7(),
             v_listing_id,
             v_buyer_id,
             round((v_price * 0.90)::numeric, 2),
@@ -532,7 +532,7 @@ BEGIN
                 offer_id, listing_id, offered_by, price, status
             )
             VALUES (
-                gen_random_uuid(),
+                uuidv7(),
                 v_listing_id,
                 v_seller_id,
                 -- Seller moves the price up to 95% of asking price.
@@ -546,7 +546,7 @@ BEGIN
                 offer_id, listing_id, offered_by, price, status
             )
             VALUES (
-                gen_random_uuid(),
+                uuidv7(),
                 v_listing_id,
                 v_buyer_id,
                 -- 92.5% is halfway between the buyer's initial 90% and
@@ -614,7 +614,7 @@ BEGIN
             2
         );
 
-        v_order_id := gen_random_uuid();
+        v_order_id := uuidv7();
 
         -- Target distribution: 90% completed, 6% cancelled, 4% pending.
         -- Store one random value so the thresholds are cumulative and keep these
@@ -700,7 +700,7 @@ BEGIN
                 review
             )
             VALUES (
-                gen_random_uuid(),
+                uuidv7(),
                 v_order_id,
                 v_buyer_id,
                 3 + (v_i % 3),
@@ -739,7 +739,7 @@ BEGIN
         -- The order must exist because orders are generated from v_listing_ids.
         CONTINUE WHEN NOT FOUND;
 
-        v_chat_id := gen_random_uuid();
+        v_chat_id := uuidv7();
 
         INSERT INTO chats (
             chat_id,
@@ -762,7 +762,7 @@ BEGIN
             message
         )
         VALUES (
-            gen_random_uuid(),
+            uuidv7(),
             v_chat_id,
             v_buyer_id,
             v_seller_id,
@@ -777,7 +777,7 @@ BEGIN
             message
         )
         VALUES (
-            gen_random_uuid(),
+            uuidv7(),
             v_chat_id,
             v_seller_id,
             v_buyer_id,

@@ -259,4 +259,5 @@ plainto_tsquery('simple', 'Велосипеди');` –> result: 0
 3.`SELECT count(*) FROM listings WHERE search_vector @@
 plainto_tsquery('simple', 'Велосипедів');` –> result: 0
 
-Reason: no Ukrainian text search parser (checked in `SELECT * FROM pg_ts_config`)
+Reason: "simple" config in `plainto_tsquery` searches only exact matches and
+there is no Ukrainian stemmer (checked in `SELECT * FROM pg_ts_config`)

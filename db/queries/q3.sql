@@ -1,6 +1,5 @@
 --  Search not cancelled orders by date range, price range
 
-EXPLAIN (ANALYZE, BUFFERS)
 SELECT o.order_id, o.status, o.total, o.currency, o.created_at
 FROM orders o
 WHERE o.status != 'cancelled'

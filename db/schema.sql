@@ -2,6 +2,8 @@
 -- CREATE SCHEMA IF NOT EXISTS develop;
 -- SET search_path TO develop;
 
+CREATE COLLATION IF NOT EXISTS "uk_UA" (provider = icu, locale = 'uk-UA');
+
 CREATE TABLE IF NOT EXISTS users (
     user_id uuid PRIMARY KEY,
     email varchar(254) NOT NULL UNIQUE,
