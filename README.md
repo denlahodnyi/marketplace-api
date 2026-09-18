@@ -93,8 +93,12 @@ DB_USER=admin
 DB_PASSWORD=some_strong_password
 # Postgres database name
 DB_NAME=market
+# Postgres database host
+DB_HOST=db
 # Postgres database port
 DB_PORT=5432
+# Postgres full connection url
+DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 ```
 
 ### How to start
@@ -108,10 +112,24 @@ pnpm i
 pnpm start:dev
 ```
 
-Local development using Docker (server listens at port `3000`):
+#### Docker
+
+Startup all services (server listens at port `3000`):
 
 ```sh
 docker compose up -d
+```
+
+How to startup just a database:
+
+```sh
+docker compose up -d db
+```
+
+...and connect using psql (use user and database specified in .env):
+
+```sh
+docker compose exec db psql -U admin -d market
 ```
 
 Database user's password rotation example:
