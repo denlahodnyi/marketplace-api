@@ -481,6 +481,90 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+
+# /listings
+# /listings/123
+# /listings/all
+# /my-listings
+# /my-listings/123
+# /my-listings/123/offers/123/actions/reject
+# /my-listings/123/auctions/123/actions/cancel
+# /auctions
+# /auctions/123
+# /my-auctions/123/actions/cancel
+# /auctions/123/bids
+# /auctions/participating
+# /auctions/participating/123/bids
+# /me/listings
+# /me/listings/123
+# /user-listings
+# /user-listings/123
+# /listings?own=true
+
+# /health - GET public
+
+# /login POST - public
+# /register POST - public
+# /me GET - private
+# /me PATCH - private
+
+# /categories GET - public
+# /categories/:catId POST - private
+# /categories/:catId PATCH - private
+
+# /carts - GET public
+# /carts - PUT public
+# /carts/listings/123 - PATCH public
+# /carts/listings/123 - DELETE public
+
+# /orders
+# /orders/123
+# /sales/orders
+# /sales/orders/123
+# /sales/stats
+
+# VAR 1
+# /me/listings - GET private
+# /listings - POST private
+# /listings/123 - GET private
+# /listings/123 - PATCH private
+# /listings/123 - DELETE private
+# /me/listings/123/offers/123/actions/accept - POST private ???
+# /me/listings/123/offers/123/actions/reject - POST private ???
+# /listings/123/offers/123/actions/reject - POST private ???
+# /listings/123/me/offers/123/actions/cancel - POST private (???)
+# /listings – GET public
+# /listings/123 – GET public
+# /listings/123/offers – POST public
+# /listings/favorites - GET private
+# /listings/123/actions/watch - POST private
+
+# /me/auctions - GET private
+# /auctions/123 - GET private
+# /auctions/123 - PATCH private
+# /auctions/123 - DELETE private
+# /auctions - GET public
+# /auctions/participating - GET private
+# /auctions/participating/123 - GET private
+# /auctions/participating/123/bids - POST private
+
+# VAR 2
+# /listings - GET private
+# /listings/all - GET public
+# /listings?all=true - GET public
+# /listings - POST private
+# /listings/123 - GET private|public
+# /listings/123/offers - POST public
+# /listings/123/offers/123/actions/accept - POST private
+# /auctions - GET private
+# /auctions/all - GET public
+# /auctions/123 - GET private
+# /auctions/joined - GET private
+# /auctions/joined/123/bids - POST private
+
+# /admin/listing-reviews - GET private
+# /admin/listing-reviews/123 - PATCH private
+
 components:
   schemas:
     Problem:
