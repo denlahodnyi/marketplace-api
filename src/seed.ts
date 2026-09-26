@@ -102,7 +102,11 @@ const LISTING_TITLES = [
 
 await dataSource.initialize();
 await dataSource.dropDatabase();
-await dataSource.synchronize();
+if (await dataSource.showMigrations()) {
+  await dataSource.runMigrations();
+} else if (!dataSource.migrations.length) {
+  await dataSource.synchronize();
+}
 
 await dataSource.manager.transaction(async (em) => {
   const categoryRepo = em.getRepository(Category);
