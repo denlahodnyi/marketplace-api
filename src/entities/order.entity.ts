@@ -58,11 +58,11 @@ export class Order extends primaryAsUuidEntityFactory('orderId') {
     | 'completed'
     | 'cancelled';
 
-  @Column('numeric', { nullable: false })
-  subTotal: string;
+  @Column('integer', { nullable: false })
+  subTotal: number;
 
-  @Column('numeric', { nullable: false })
-  total: string;
+  @Column('integer', { nullable: false })
+  total: number;
 
   @Column('text', { nullable: false })
   currency: string;

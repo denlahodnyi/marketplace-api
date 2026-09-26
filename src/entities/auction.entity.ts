@@ -35,14 +35,14 @@ export class Auction extends primaryAsUuidEntityFactory('aucId') {
   @Column('text', { nullable: false })
   status: 'created' | 'active' | 'finished' | 'cancelled';
 
-  @Column('numeric', { nullable: false })
-  startPrice: string;
+  @Column('integer', { nullable: false })
+  startPrice: number;
 
-  @Column('numeric', { nullable: false, default: 0 })
-  reservePrice: string;
+  @Column('integer', { nullable: false, default: 0 })
+  reservePrice: number;
 
-  @Column('numeric', { nullable: true })
-  currentPrice: string | null;
+  @Column('integer', { nullable: true })
+  currentPrice: number | null;
 
   @OneToOne('Bid', { nullable: true })
   @JoinColumn({ name: 'current_bid' })

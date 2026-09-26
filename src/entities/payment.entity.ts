@@ -33,8 +33,8 @@ export class Payment extends primaryAsUuidEntityFactory('orderId') {
   @Column('text', { nullable: true, name: 'card_last4' })
   cardLast4: string | null;
 
-  @Column('numeric', { nullable: false })
-  amount: string;
+  @Column('integer', { nullable: false })
+  amount: number;
 
   @Column('text', { nullable: false })
   currency: string;

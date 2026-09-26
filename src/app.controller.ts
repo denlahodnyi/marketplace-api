@@ -7,9 +7,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { readFile } from 'node:fs/promises';
 import pg, { type Pool } from 'pg';
+import { DataSource } from 'typeorm';
 
 import { AppService } from './app.service.js';
 import { type Env } from './config/index.js';
+import { Listing } from './entities/listing.entity.js';
 
 const SECRET_FILE = new URL('../secrets/db_password', import.meta.url);
 
@@ -18,6 +20,7 @@ export class AppController implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly appService: AppService,
     private readonly config: ConfigService<Env, true>,
+    private readonly ds: DataSource,
   ) {
     this.startTime = Date.now();
   }
@@ -40,7 +43,11 @@ export class AppController implements OnModuleInit, OnModuleDestroy {
   }
 
   @Get()
-  getHello(): string {
+  async getHello() {
+    const listing = await this.ds
+      .getRepository(Listing)
+      .findOne({ where: { status: 'active' } });
+    console.log(`🚀 -> AppController -> getHello -> listing:`, listing);
     return this.appService.getHello();
   }
 

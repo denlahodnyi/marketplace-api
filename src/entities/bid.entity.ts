@@ -36,8 +36,8 @@ export class Bid extends primaryAsUuidEntityFactory('bidId') {
   @Column('text', { nullable: false })
   status: 'active' | 'outbidded' | 'cancelled';
 
-  @Column('numeric', { nullable: false })
-  maxAmount: string;
+  @Column('integer', { nullable: false })
+  maxAmount: number;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: string;

@@ -37,8 +37,8 @@ export class Offer extends primaryAsUuidEntityFactory('offerId') {
   @Column('uuid', { nullable: false })
   offeredBy: string;
 
-  @Column('numeric', { nullable: false })
-  price: string;
+  @Column('integer', { nullable: false })
+  price: number;
 
   @Column('text', { nullable: false })
   status: 'rejected' | 'accepted' | 'cancelled';

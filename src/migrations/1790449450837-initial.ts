@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Initial1790117834285 implements MigrationInterface {
-    name = 'Initial1790117834285'
+export class Initial1790449450837 implements MigrationInterface {
+    name = 'Initial1790449450837'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
@@ -50,7 +50,7 @@ export class Initial1790117834285 implements MigrationInterface {
                 "item_condition" text NOT NULL,
                 "selling_method" text NOT NULL,
                 "description" text NOT NULL,
-                "price" numeric NOT NULL,
+                "price" integer NOT NULL,
                 "currency" text NOT NULL,
                 "quantity" integer NOT NULL,
                 "status" text NOT NULL,
@@ -80,9 +80,9 @@ export class Initial1790117834285 implements MigrationInterface {
                 "auc_id" uuid NOT NULL DEFAULT uuidv7(),
                 "listing_id" uuid NOT NULL,
                 "status" text NOT NULL,
-                "start_price" numeric NOT NULL,
-                "reserve_price" numeric NOT NULL DEFAULT '0',
-                "current_price" numeric,
+                "start_price" integer NOT NULL,
+                "reserve_price" integer NOT NULL DEFAULT '0',
+                "current_price" integer,
                 "current_bid" uuid,
                 "start_at" TIMESTAMP WITH TIME ZONE NOT NULL,
                 "end_at" TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -106,7 +106,7 @@ export class Initial1790117834285 implements MigrationInterface {
                 "auction_id" uuid NOT NULL,
                 "bidder_id" uuid NOT NULL,
                 "status" text NOT NULL,
-                "max_amount" numeric NOT NULL,
+                "max_amount" integer NOT NULL,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 CONSTRAINT "CHK_6e1972293bc1281510853298e5" CHECK ("max_amount" > 0),
                 CONSTRAINT "CHK_5746791c7c8336b102ced9bbf0" CHECK ("status" IN ('active', 'outbidded', 'cancelled')),
@@ -169,7 +169,7 @@ export class Initial1790117834285 implements MigrationInterface {
                 "offer_id" uuid NOT NULL DEFAULT uuidv7(),
                 "listing_id" uuid NOT NULL,
                 "offered_by" uuid NOT NULL,
-                "price" numeric NOT NULL,
+                "price" integer NOT NULL,
                 "status" text NOT NULL,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "deleted_at" TIMESTAMP WITH TIME ZONE,
@@ -198,9 +198,9 @@ export class Initial1790117834285 implements MigrationInterface {
             CREATE TABLE "order_lines" (
                 "order_id" uuid NOT NULL DEFAULT uuidv7(),
                 "listing_id" uuid NOT NULL DEFAULT uuidv7(),
-                "unit_price" numeric NOT NULL,
-                "discount_amount" numeric NOT NULL DEFAULT '0',
-                "final_unit_price" numeric NOT NULL,
+                "unit_price" integer NOT NULL,
+                "discount_amount" integer NOT NULL DEFAULT '0',
+                "final_unit_price" integer NOT NULL,
                 "currency" text NOT NULL,
                 "quantity" smallint NOT NULL,
                 "listing_title" text NOT NULL,
@@ -235,8 +235,8 @@ export class Initial1790117834285 implements MigrationInterface {
                 "buyer_id" uuid NOT NULL,
                 "seller_id" uuid NOT NULL,
                 "status" text NOT NULL,
-                "sub_total" numeric NOT NULL,
-                "total" numeric NOT NULL,
+                "sub_total" integer NOT NULL,
+                "total" integer NOT NULL,
                 "currency" text NOT NULL,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "deleted_at" TIMESTAMP WITH TIME ZONE,
@@ -263,7 +263,7 @@ export class Initial1790117834285 implements MigrationInterface {
                 "payment_method" text NOT NULL DEFAULT 'credit_card',
                 "payment_status" text NOT NULL,
                 "card_last4" text,
-                "amount" numeric NOT NULL,
+                "amount" integer NOT NULL,
                 "currency" text NOT NULL,
                 "payed_at" TIMESTAMP WITH TIME ZONE,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

@@ -17,8 +17,9 @@ import { User } from './entities/user.entity.js';
 const LISTINGS_COUNT = 50;
 const ORDERS_COUNT = 50;
 
+const PRICES_IN_CENTS = true;
 const MINOR_UNITS_PER_MAJOR = 100; // "price in cents" mode | set 1 for "price in dollars"
-const MONEY_DIVISOR = MINOR_UNITS_PER_MAJOR;
+const MONEY_DIVISOR = PRICES_IN_CENTS ? 1 : MINOR_UNITS_PER_MAJOR; // 100 = cents = convert to USD | 1 = USD = keep in cents
 const LOW_PRICE_PERCENT = 1;
 const LOW_PRICE_MIN = 1;
 const LOW_PRICE_MAX = 20;
@@ -108,6 +109,12 @@ if (await dataSource.showMigrations()) {
   await dataSource.synchronize();
 }
 
+function coercePrice(price: number) {
+  return (PRICES_IN_CENTS
+    ? Math.floor(price)
+    : price.toFixed(2)) as unknown as number;
+}
+
 await dataSource.manager.transaction(async (em) => {
   const categoryRepo = em.getRepository(Category);
   const categories: Category[] = await categoryRepo.save(CATEGORIES);
@@ -152,15 +159,11 @@ await dataSource.manager.transaction(async (em) => {
     const seller = customers[i % customers.length];
     const price =
       Math.random() * 100 < LOW_PRICE_PERCENT
-        ? (
-            (LOW_PRICE_MIN + Math.random() * (LOW_PRICE_MAX - LOW_PRICE_MIN)) /
-            MONEY_DIVISOR
-          ).toFixed(2)
-        : (
-            (NORMAL_PRICE_MIN +
-              Math.random() * (NORMAL_PRICE_MAX - NORMAL_PRICE_MIN)) /
-            MONEY_DIVISOR
-          ).toFixed(2);
+        ? (LOW_PRICE_MIN + Math.random() * (LOW_PRICE_MAX - LOW_PRICE_MIN)) /
+          MONEY_DIVISOR
+        : (NORMAL_PRICE_MIN +
+            Math.random() * (NORMAL_PRICE_MAX - NORMAL_PRICE_MIN)) /
+          MONEY_DIVISOR;
     const sellingMethod: Listing['sellingMethod'] =
       Math.random() < 0.7
         ? 'fixed_price'
@@ -174,7 +177,7 @@ await dataSource.manager.transaction(async (em) => {
     listing.user = seller;
     listing.sellingMethod = sellingMethod;
     listing.currency = 'UAH';
-    listing.price = price;
+    listing.price = coercePrice(price);
     listing.itemCondition = Math.random() < 0.55 ? 'used' : 'new';
     listing.description =
       'Якісний товар. Детальний опис буде доступний покупцю перед оформленням замовлення.';
@@ -203,8 +206,8 @@ await dataSource.manager.transaction(async (em) => {
     const auction = new Auction();
     auction.listing = l;
     auction.status = 'finished';
-    auction.startPrice = Math.max(1, +l.price * 0.7).toFixed(2);
-    auction.reservePrice = (+l.price * 0.8).toFixed(2);
+    auction.startPrice = coercePrice(Math.max(1, +l.price * 0.7));
+    auction.reservePrice = coercePrice(+l.price * 0.8);
     auction.startAt = setHours(subDays(Date.now(), 30), i % 20).toISOString();
     auction.endAt = setHours(subDays(Date.now(), 29), i % 20).toISOString();
     return auction;
@@ -221,8 +224,8 @@ await dataSource.manager.transaction(async (em) => {
       bid1.bidder = customers[i + (7 % customers.length)];
       bid1.auction = auc;
       bid1.status = 'outbidded';
-      bid1.maxAmount = Math.round(+auc.startPrice * (1.05 + 1 * 0.1)).toFixed(
-        2,
+      bid1.maxAmount = coercePrice(
+        Math.round(+auc.startPrice * (1.05 + 1 * 0.1)),
       );
       bid1.createdAt = addHours(new Date(auc.startAt), 1).toISOString();
 
@@ -230,8 +233,8 @@ await dataSource.manager.transaction(async (em) => {
       bid2.bidder = customers[i + (8 % customers.length)];
       bid2.auction = auc;
       bid2.status = 'active';
-      bid2.maxAmount = Math.round(+auc.startPrice * (1.05 + 2 * 0.1)).toFixed(
-        2,
+      bid2.maxAmount = coercePrice(
+        Math.round(+auc.startPrice * (1.05 + 2 * 0.1)),
       );
       bid2.createdAt = addHours(new Date(auc.startAt), 2).toISOString();
 
@@ -260,20 +263,20 @@ await dataSource.manager.transaction(async (em) => {
     const offer1 = new Offer();
     offer1.listing = l;
     offer1.offeredBy = buyer.userId;
-    offer1.price = (+l.price * 0.9).toFixed(2);
+    offer1.price = coercePrice(+l.price * 0.9);
     offer1.status = 'rejected';
 
     if (i % 3 === 0) {
       const offer2 = new Offer();
       offer2.listing = l;
       offer2.offeredBy = l.userId;
-      offer2.price = (+l.price * 0.95).toFixed(2);
+      offer2.price = coercePrice(+l.price * 0.95);
       offer2.status = 'rejected';
 
       const offer3 = new Offer();
       offer3.listing = l;
       offer3.offeredBy = buyer.userId;
-      offer3.price = (+l.price * 0.925).toFixed(2);
+      offer3.price = coercePrice(+l.price * 0.925);
       offer3.status = 'accepted';
       return [offer1, offer2, offer3];
     } else {
@@ -331,7 +334,7 @@ await dataSource.manager.transaction(async (em) => {
     ol.listing = prepOrderListings[i];
     ol.unitPrice = prepOrderListings[i].price;
     ol.finalUnitPrice = prepOrderListings[i].price;
-    ol.discountAmount = '0';
+    ol.discountAmount = 0;
     ol.currency = 'UAH';
     ol.quantity = 1;
     ol.listingTitle = prepOrderListings[i].title;

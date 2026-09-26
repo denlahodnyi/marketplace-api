@@ -53,8 +53,8 @@ export class Listing extends primaryAsUuidEntityFactory('listingId') {
   @Column('text', { nullable: false })
   description: string;
 
-  @Column('numeric', { nullable: false })
-  price: string;
+  @Column('integer', { nullable: false })
+  price: number;
 
   @Column('text', { nullable: false })
   currency: string;

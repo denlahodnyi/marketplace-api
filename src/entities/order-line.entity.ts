@@ -35,14 +35,14 @@ export class OrderLine {
   @JoinColumn({ name: 'listing_id' })
   listing: Listing;
 
-  @Column('numeric', { nullable: false })
-  unitPrice: string;
+  @Column('integer', { nullable: false })
+  unitPrice: number;
 
-  @Column('numeric', { nullable: false, default: 0 })
-  discountAmount: string;
+  @Column('integer', { nullable: false, default: 0 })
+  discountAmount: number;
 
-  @Column('numeric', { nullable: false })
-  finalUnitPrice: string;
+  @Column('integer', { nullable: false })
+  finalUnitPrice: number;
 
   @Column('text', { nullable: false })
   currency: string;
