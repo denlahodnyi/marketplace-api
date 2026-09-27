@@ -40,7 +40,7 @@ export class Offer extends primaryAsUuidEntityFactory('offerId') {
   @Column('integer', { nullable: false })
   price: number;
 
-  @Column('text', { nullable: false })
+  @Column('text', { nullable: false }) // TODO: make it nullable or add pending status
   status: 'rejected' | 'accepted' | 'cancelled';
 
   @CreateDateColumn({ type: 'timestamp with time zone' })

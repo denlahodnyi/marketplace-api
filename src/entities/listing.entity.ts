@@ -21,7 +21,7 @@ import { User } from './user.entity.js';
 @Check(`"selling_method" IN ('fixed_price', 'best_offer', 'auction')`)
 @Check(`"price" >= 0`)
 @Check(`length("currency") = 3`)
-@Check(`"quantity" > 0`)
+@Check(`"quantity" >= 0`)
 @Check(`"status" IN ('on_review', 'declined', 'active', 'inactive')`)
 export class Listing extends primaryAsUuidEntityFactory('listingId') {
   @OneToMany('Offer', (offer: Offer) => offer.listing)

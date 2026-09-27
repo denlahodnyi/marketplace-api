@@ -183,3 +183,7 @@ Repository vs QueryBuilder: use QueryBuilder when simple queries are not enough
 ```sh
 pnpm demo:report
 ```
+
+## Grading
+
+There is no secrets storage, so credentials are taken from .env (see .env.example).
