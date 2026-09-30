@@ -8,6 +8,13 @@ const pool = new Pool({ connectionString: process.env.DB_URL });
 const INIT_STOCK = 10;
 const WORKERS = 50;
 
+// Creates demo table for post-processing (in case it will be dropped in the future )
+await pool.query(`
+    CREATE TABLE IF NOT EXISTS orders_notifications (
+      order_id text NOT NULL REFERENCES orders (order_id),
+      notified bool NOT NULL DEFAULT FALSE
+    );
+  `);
 const listing = await pool.query(
   `
   WITH listing AS (SELECT listing_id FROM listings LIMIT 1)
@@ -48,4 +55,8 @@ console.log(`Final quantity: ${listingFinal.rows[0].quantity}`);
 console.log(
   `Rows with negative quantity: ${listingFinal.rows[0].quantity < 0 ? 1 : 0}`,
 );
+if (listingFinal.rows[0].quantity < 0) {
+  process.exit(1);
+}
+
 await pool.end();

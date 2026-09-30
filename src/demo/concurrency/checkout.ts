@@ -9,9 +9,10 @@ export default async function checkout(
   try {
     await client.query('BEGIN;');
     const listingResult = await client.query(
-      'SELECT * FROM listings WHERE listing_id = $1 FOR UPDATE;',
-      [listingId],
+      'SELECT * FROM listings WHERE listing_id = $1 AND quantity >= $2 FOR UPDATE;',
+      [listingId, orderedQty],
     );
+    if (!listingResult.rowCount) throw new Error('Out of stock');
     const listing = listingResult.rows[0];
     const orderResult = await client.query(
       `
@@ -42,6 +43,22 @@ export default async function checkout(
         listing.currency,
         orderedQty,
         listing.title,
+      ],
+    );
+    await client.query(`INSERT INTO orders_notifications VALUES ($1, FALSE)`, [
+      order.order_id,
+    ]);
+    await client.query(
+      `
+      INSERT INTO payments (order_id, payment_method, payment_status, amount, currency)
+      VALUES ($1, $2, $3, $4, $5)
+    `,
+      [
+        order.order_id,
+        'credit_card',
+        'pending',
+        listing.price,
+        listing.currency,
       ],
     );
     await client.query(

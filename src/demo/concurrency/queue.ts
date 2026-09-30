@@ -8,9 +8,10 @@ const TASK_DELAY = 50;
 
 const pool = new Pool({ connectionString: process.env.DB_URL });
 
+// Creates demo table for post-processing (in case it will be dropped in the future )
 await pool.query(`
     CREATE TABLE IF NOT EXISTS orders_notifications (
-      order_id text NOT NULL,
+      order_id text NOT NULL REFERENCES orders (order_id),
       notified bool NOT NULL DEFAULT FALSE
     );
   `);
@@ -49,7 +50,7 @@ const result = await Promise.all(
 );
 const t2 = performance.now();
 
-await pool.query('DROP TABLE orders_notifications;');
+// await pool.query('DROP TABLE orders_notifications;');
 await pool.end();
 
 console.log(
