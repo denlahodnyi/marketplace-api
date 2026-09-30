@@ -25,14 +25,17 @@
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "migrate": "typeorm-ts-node-esm migration:run -d src/data-source.ts",
-    "migrate:revert": "typeorm-ts-node-esm migration:revert -d src/data-source.ts",
-    "migrate:generate": "typeorm-ts-node-esm migration:generate -d src/data-source.ts --pretty src/migrations/$NAME",
-    "migrate:show": "typeorm-ts-node-esm migration:show -d src/data-source.ts",
-    "drop-schema": "typeorm-ts-node-esm schema:drop -d src/data-source.ts",
-    "seed": "node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/seed.ts",
-    "demo:nplus1": "node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo-nplus1.ts",
-    "demo:report": "node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/report.ts"
+    "migrate": "bash scripts/with-secrets.sh && typeorm-ts-node-esm migration:run -d src/data-source.ts",
+    "migrate:revert": "bash scripts/with-secrets.sh && typeorm-ts-node-esm migration:revert -d src/data-source.ts",
+    "migrate:generate": "bash scripts/with-secrets.sh && typeorm-ts-node-esm migration:generate -d src/data-source.ts --pretty src/migrations/$NAME",
+    "migrate:show": "bash scripts/with-secrets.sh && typeorm-ts-node-esm migration:show -d src/data-source.ts",
+    "drop-schema": "bash scripts/with-secrets.sh && typeorm-ts-node-esm schema:drop -d src/data-source.ts",
+    "seed": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/seed.ts",
+    "demo:nplus1": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo-nplus1.ts",
+    "demo:report": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/report.ts",
+    "demo:race": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/race.ts",
+    "demo:workers": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/queue.ts",
+    "demo:retry": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/retry.ts"
   },
   "scarfSettings": {
     "enabled": false
