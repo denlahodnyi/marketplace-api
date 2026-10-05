@@ -6,12 +6,12 @@ import {
   type SelectQueryBuilder,
 } from 'typeorm';
 
-import { dataSourceOptions } from './data-source.js';
+import { dataSourceOptions } from '../../data-source.js';
 
 import '@dotenvx/dotenvx/config';
 
-import { Listing } from './entities/listing.entity.js';
-import { User } from './entities/user.entity.js';
+import { Listing } from '../../entities/listing.entity.js';
+import { User } from '../../entities/user.entity.js';
 
 class QueryCountLogger extends AbstractLogger {
   count = 0;

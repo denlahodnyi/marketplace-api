@@ -31,8 +31,8 @@
     "migrate:show": "bash scripts/with-secrets.sh && typeorm-ts-node-esm migration:show -d src/data-source.ts",
     "drop-schema": "bash scripts/with-secrets.sh && typeorm-ts-node-esm schema:drop -d src/data-source.ts",
     "seed": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/seed.ts",
-    "demo:nplus1": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo-nplus1.ts",
-    "demo:report": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/report.ts",
+    "demo:nplus1": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/orm/demo-nplus1.ts",
+    "demo:report": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/orm/report.ts",
     "demo:race": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/race.ts",
     "demo:workers": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/queue.ts",
     "demo:retry": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/retry.ts"
