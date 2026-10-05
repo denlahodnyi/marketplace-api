@@ -74,7 +74,10 @@ async function processTask(client: PoolClient) {
     const order = await client.query(
       'SELECT * FROM orders_notifications WHERE notified = FALSE LIMIT 1 FOR UPDATE SKIP LOCKED;',
     );
-    if (!order.rowCount) return { success: true, orderId: null };
+    if (!order.rowCount) {
+      await client.query('COMMIT;');
+      return { success: true, orderId: null };
+    }
     await setTimeout(TASK_DELAY);
     await client.query(
       'UPDATE orders_notifications SET notified = TRUE WHERE order_id = $1;',

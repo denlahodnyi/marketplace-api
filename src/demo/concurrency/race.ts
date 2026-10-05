@@ -47,15 +47,14 @@ const listingFinal = await pool.query(
   'SELECT * FROM listings WHERE listing_id = $1',
   [listing.rows[0].listing_id],
 );
+const totalSuccess = results.filter((o) => o.success).length;
 console.log(`Total tries: ${results.length}`);
-console.log(
-  `Total successful tries: ${results.filter((o) => o.success).length}`,
-);
+console.log(`Total successful tries: ${totalSuccess}`);
 console.log(`Final quantity: ${listingFinal.rows[0].quantity}`);
 console.log(
   `Rows with negative quantity: ${listingFinal.rows[0].quantity < 0 ? 1 : 0}`,
 );
-if (listingFinal.rows[0].quantity < 0) {
+if (totalSuccess > INIT_STOCK) {
   process.exit(1);
 }
 

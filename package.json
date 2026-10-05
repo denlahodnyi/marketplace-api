@@ -9,7 +9,7 @@
     "test:pact": "node --test ./pacts/consumer.pact.test.js",
     "lint:oas": "redocly lint --extends minimal ./openapi/openapi.yaml",
     "swagger:dev": "python3 -m http.server 5100 --directory ./openapi",
-    "check:env": "node ./scripts/check-env-example.ts",
+    "check:env": "node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm ./scripts/check-env-example.ts",
     "build": "nest build",
     "deploy": "nest deploy",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
