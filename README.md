@@ -93,10 +93,10 @@ DB_USER=admin
 DB_PASSWORD=some_strong_password
 # Postgres database name
 DB_NAME=market
-# Postgres database host
-DB_HOST=db
+# Postgres database host (in Docker should point to service name)
+DB_HOST=pgbouncer
 # Postgres database port
-DB_PORT=5432
+DB_PORT=5433
 # Postgres full connection url
 DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 ```
@@ -118,6 +118,8 @@ Startup all services (server listens at port `3000`):
 
 ```sh
 docker compose up -d
+# Watch mode
+docker compose up -d --watch
 ```
 
 How to startup just a database:
@@ -157,16 +159,75 @@ pnpm migrate:revert # Revert migration
 pnpm migrate:show # List migrations
 ```
 
+Using Docker:
+
+```sh
+docker compose exec -T backend pnpm migrate
+```
+
 Seeding (dangerous: it drops database):
 
 ```sh
 pnpm seed
+# with custom number of orders and listings
+pnpm seed --listings=100000 --orders=100000
 ```
+
+Using Docker:
+
+```sh
+docker compose up -d --wait
+docker compose exec -T backend pnpm seed
+# Check
+docker compose exec -T db sh -c "psql -h localhost -p 5432 -U admin -d market -c 'select count(*) from users;'"
+```
+
+## Data layer ops
+
+Backup:
+
+```sh
+docker compose up -d db --wait
+pnpm backup
+```
+
+Backup drill:
+
+```sh
+docker compose up -d db --wait
+pnpm backup:drill backup_file.dump
+```
+
+PgBouncer admin console:
+
+```sh
+docker compose up -d pgbouncer --wait
+psql postgres://admin:<password>@127.0.0.1:20101/pgbouncer
+# or
+docker compose exec -T pgbouncer sh -c "psql -p 5433 -U admin -d pgbouncer -h 127.0.0.1 -Atc \"show pools;\""
+```
+
+Why PgBouncer in Transaction mode? Transaction mode allows holding connection
+for the duration of the transaction. This is a golden mean between Session and
+Statement modes. Session mode is almost the same as no pooling, while Statement mode
+is too strict. Caveats: session-wide features are not available (e.g., advisory
+lock, `SET`, `RESET`, `LISTEN`, `NOTIFY`, etc).
 
 ## Grading
 
 There is no secrets storage, so credentials are taken from .env (see
 .env.example).
 
-`docker compose up -d --wait <script>` or with connection url - `docker compose
-up -d --wait export DB_URL=... <script>` (check DB_URL example in .env.example)
+```sh
+docker compose up -d --wait
+<scripts>
+```
+
+...or with connection url (check DB_URL example in .env.example)
+
+```sh
+docker compose up -d --wait
+export DB_URL=...
+export SKIP_VAULT=1
+<script>
+```

@@ -1,6 +1,7 @@
 -- DROP SCHEMA IF EXISTS develop CASCADE;
 -- CREATE SCHEMA IF NOT EXISTS develop;
 -- SET search_path TO develop;
+BEGIN;
 
 CREATE COLLATION IF NOT EXISTS "uk_UA" (provider = icu, locale = 'uk-UA');
 
@@ -13,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_salt text,
     phone text,
     user_role text NOT NULL CHECK (user_role IN ('admin', 'customer')),
-    created_at   DEFAULT now() NOT NULL
+    created_at timestamptz DEFAULT now() NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -207,3 +208,5 @@ CREATE TABLE IF NOT EXISTS cart_details (
     quantity SMALLINT NOT NULL CHECK (quantity > 0),
     PRIMARY KEY (cart_id, listing_id)
 );
+
+COMMIT;

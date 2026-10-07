@@ -13,9 +13,17 @@ import { OrderRating } from './entities/order-rating.entity.js';
 import { Order } from './entities/order.entity.js';
 import { Payment } from './entities/payment.entity.js';
 import { User } from './entities/user.entity.js';
+import { getArgs } from './libs/args.js';
 
-const LISTINGS_COUNT = 50;
-const ORDERS_COUNT = 50;
+// TODO: add prompt that warns about drop
+const parsedArgs = getArgs();
+const listingsArg = Number(parsedArgs.listings);
+const ordersArg = Number(parsedArgs.orders);
+
+const LISTINGS_COUNT = listingsArg > 0 ? listingsArg : 20_000;
+const ORDERS_COUNT = ordersArg > 0 ? ordersArg : 50_000;
+console.log('LISTINGS_COUNT=', LISTINGS_COUNT);
+console.log('ORDERS_COUNT=', ORDERS_COUNT);
 
 const PRICES_IN_CENTS = true;
 const MINOR_UNITS_PER_MAJOR = 100; // "price in cents" mode | set 1 for "price in dollars"
@@ -101,6 +109,8 @@ const LISTING_TITLES = [
   'Товар для дому',
 ];
 
+const startTime = performance.now();
+
 await dataSource.initialize();
 await dataSource.dropDatabase();
 if (await dataSource.showMigrations()) {
@@ -115,6 +125,13 @@ function coercePrice(price: number) {
     : price.toFixed(2)) as unknown as number;
 }
 
+let progress = 0;
+function logProgress() {
+  progress += 1;
+  // 12 save()
+  console.log(`Progress: ${Math.floor((progress / 12) * 100)}%`);
+}
+
 await dataSource.manager.transaction(async (em) => {
   const categoryRepo = em.getRepository(Category);
   const categories: Category[] = await categoryRepo.save(CATEGORIES);
@@ -122,7 +139,9 @@ await dataSource.manager.transaction(async (em) => {
     name: CHILD_CATEGORIES[i].name,
     parentCategory: cat,
   }));
+  logProgress();
   const readyCategories = await categoryRepo.save(childCategories);
+  logProgress();
 
   const users: User[] = cartesianProduct(
     Object.keys(USERS.names),
@@ -150,6 +169,7 @@ await dataSource.manager.transaction(async (em) => {
     users.push(admin);
   });
   const readyUsers = await em.getRepository(User).save(users);
+  logProgress();
   const customers = readyUsers.filter((u) => u.userRole === 'customer');
   const admins = readyUsers.filter((u) => u.userRole === 'admin');
   const prepListings: Listing[] = [];
@@ -186,7 +206,10 @@ await dataSource.manager.transaction(async (em) => {
     prepListings.push(listing);
   }
 
-  const readyListings = await em.getRepository(Listing).save(prepListings);
+  const readyListings = await em
+    .getRepository(Listing)
+    .save(prepListings, { chunk: 5000 });
+  logProgress();
 
   const reviews = readyListings.map((l, i) => {
     const review = new ListingAdminReview();
@@ -197,7 +220,8 @@ await dataSource.manager.transaction(async (em) => {
     return review;
   });
 
-  await em.getRepository(ListingAdminReview).save(reviews);
+  await em.getRepository(ListingAdminReview).save(reviews, { chunk: 5000 });
+  logProgress();
 
   const [auctionListings] = await em
     .getRepository(Listing)
@@ -213,7 +237,10 @@ await dataSource.manager.transaction(async (em) => {
     return auction;
   });
 
-  const readyAuctions = await em.getRepository(Auction).save(preparedAuctions);
+  const readyAuctions = await em
+    .getRepository(Auction)
+    .save(preparedAuctions, { chunk: 5000 });
+  logProgress();
 
   const outbiddedAucs: Auction[] = [];
   const prepBids = readyAuctions
@@ -221,7 +248,7 @@ await dataSource.manager.transaction(async (em) => {
       if (i % readyAuctions.length === 0) return;
       outbiddedAucs.push(auc);
       const bid1 = new Bid();
-      bid1.bidder = customers[i + (7 % customers.length)];
+      bid1.bidder = customers[(i + 7) % customers.length];
       bid1.auction = auc;
       bid1.status = 'outbidded';
       bid1.maxAmount = coercePrice(
@@ -230,7 +257,7 @@ await dataSource.manager.transaction(async (em) => {
       bid1.createdAt = addHours(new Date(auc.startAt), 1).toISOString();
 
       const bid2 = new Bid();
-      bid2.bidder = customers[i + (8 % customers.length)];
+      bid2.bidder = customers[(i + 8) % customers.length] ?? customers[i + 1];
       bid2.auction = auc;
       bid2.status = 'active';
       bid2.maxAmount = coercePrice(
@@ -242,7 +269,10 @@ await dataSource.manager.transaction(async (em) => {
     })
     .filter((bids) => bids !== undefined);
 
-  const readyBids = await em.getRepository(Bid).save(prepBids.flat());
+  const readyBids = await em
+    .getRepository(Bid)
+    .save(prepBids.flat(), { chunk: 5000 });
+  logProgress();
 
   const updAucs = outbiddedAucs.map((auc, i) => {
     const topBid = readyBids[i * 2 + 1];
@@ -284,7 +314,8 @@ await dataSource.manager.transaction(async (em) => {
     }
   });
 
-  await em.getRepository(Offer).save(prepOffers.flat());
+  await em.getRepository(Offer).save(prepOffers.flat(), { chunk: 5000 });
+  logProgress();
 
   const prepOrders: Order[] = [];
   const prepOrderListings: Listing[] = [];
@@ -326,7 +357,10 @@ await dataSource.manager.transaction(async (em) => {
     prepOrders.push(order);
   }
 
-  const readyOrders = await em.getRepository(Order).save(prepOrders);
+  const readyOrders = await em
+    .getRepository(Order)
+    .save(prepOrders, { chunk: 5000 });
+  logProgress();
 
   const prepOrderLines: OrderLine[] = readyOrders.map((o, i) => {
     const ol = new OrderLine();
@@ -341,7 +375,8 @@ await dataSource.manager.transaction(async (em) => {
     return ol;
   });
 
-  await em.getRepository(OrderLine).save(prepOrderLines);
+  await em.getRepository(OrderLine).save(prepOrderLines, { chunk: 5000 });
+  logProgress();
 
   const prepPayments: Payment[] = readyOrders.map((o, i) => {
     const payment = new Payment();
@@ -361,7 +396,8 @@ await dataSource.manager.transaction(async (em) => {
     return payment;
   });
 
-  await em.getRepository(Payment).save(prepPayments);
+  await em.getRepository(Payment).save(prepPayments, { chunk: 5000 });
+  logProgress();
 
   const completedOrders = await em
     .getRepository(Order)
@@ -388,9 +424,13 @@ await dataSource.manager.transaction(async (em) => {
     })
     .filter((r) => r !== undefined);
 
-  await em.getRepository(OrderRating).save(prepRatings);
+  await em.getRepository(OrderRating).save(prepRatings, { chunk: 5000 });
+  logProgress();
 });
 
+await dataSource.query('VACUUM(ANALYZE);'); // fresh statistics + visibility maps
 await dataSource.destroy();
 
-console.log('Seeded successfully');
+console.log(
+  `Seeded successfully in ${Math.round((performance.now() - startTime) / 1000)}s`,
+);

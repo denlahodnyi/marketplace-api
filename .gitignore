@@ -1,6 +1,7 @@
 node_modules
 dist
 secrets/*
+backups
 *.tsbuildinfo
 .DS_Store
 .env
