@@ -147,7 +147,7 @@ async function withRetry<T>(fn: () => T, maxAttempts = 3) {
       const { code, message } = error as DatabaseError;
       console.error(`Error ${code}: `, message);
       if (code && ['40001', '40P01'].includes(code)) {
-        if (i <= maxAttempts) {
+        if (i < maxAttempts) {
           const backoff = Math.round(2 ** i * 25 + Math.random() * 25);
           console.log(`Retry #: ${i}`);
           console.log('Backoff: ', backoff);
