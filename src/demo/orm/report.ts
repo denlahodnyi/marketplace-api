@@ -1,12 +1,12 @@
 import { DataSource } from 'typeorm';
 
-import { dataSourceOptions } from './data-source.js';
+import { dataSourceOptions } from '../../data-source.js';
 
 import '@dotenvx/dotenvx/config';
 
-import { Listing } from './entities/listing.entity.js';
-import { OrderLine } from './entities/order-line.entity.js';
-import { Order } from './entities/order.entity.js';
+import { Listing } from '../../entities/listing.entity.js';
+import { OrderLine } from '../../entities/order-line.entity.js';
+import { Order } from '../../entities/order.entity.js';
 
 const dataSource = new DataSource({
   ...dataSourceOptions,

@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS listings (
     description text NOT NULL,
     price NUMERIC NOT NULL CHECK (price >= 0),
     currency text NOT NULL CHECK (length(currency) = 3),
-    quantity int NOT NULL CHECK (quantity > 0),
+    quantity int NOT NULL CHECK (quantity >= 0),
     status text NOT NULL CHECK (status IN ('on_review', 'declined', 'active', 'inactive')),
     created_at timestamptz DEFAULT now() NOT NULL,
     deleted_at timestamptz,

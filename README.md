@@ -146,7 +146,7 @@ Database user's password rotation example:
 6. Stop docker: `docker compose down -v`. On next start make sure that initial
    passwords match (as in the first step)
 
-### MIgrations and seeding
+### Migrations and seeding
 
 Migrations:
 
@@ -163,23 +163,10 @@ Seeding (dangerous: it drops database):
 pnpm seed
 ```
 
-## Demo
+## Grading
 
-### N+1
+There is no secrets storage, so credentials are taken from .env (see
+.env.example).
 
-Naive: ≥ 5 (1 query for customers (5 items) + 1 query per each customer in a loop)
-
-Fixed: 1 (single query for customers and listings using QueryBuilder)
-
-```sh
-pnpm demo:nplus1
-```
-
-### Report using QueryBuilder
-
-Repository vs QueryBuilder: use QueryBuilder when simple queries are not enough
-(CTE, subqueries, aggregations)
-
-```sh
-pnpm demo:report
-```
+`docker compose up -d --wait <script>` or with connection url - `docker compose
+up -d --wait export DB_URL=... <script>` (check DB_URL example in .env.example)

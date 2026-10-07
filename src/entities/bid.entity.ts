@@ -15,6 +15,7 @@ import { primaryAsUuidEntityFactory } from './shared.js';
 @Entity('bids')
 @Check(`"status" IN ('active', 'outbidded', 'cancelled')`)
 @Check(`"max_amount" > 0`)
+// TODO: @Index(['auctionId'], { unique: true, where: `"status" = 'active'` })
 export class Bid extends primaryAsUuidEntityFactory('bidId') {
   @ManyToOne('Auction', (auction: Auction) => auction.bids, {
     nullable: false,

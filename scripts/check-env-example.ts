@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { parseEnv } from 'node:util';
 
-import { envSchema } from '../src/config/env.schema.ts';
+import { envSchema } from '../src/config/env.schema.js';
 
 const env = readFileSync(new URL('../.env.example', import.meta.url), 'utf8');
 const parsed = parseEnv(env);
