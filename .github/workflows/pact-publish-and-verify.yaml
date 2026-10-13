@@ -1,0 +1,84 @@
+name: Publish pact, verify provider, can-i-deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pact:
+    name: Pact Contract Verification
+    runs-on: ubuntu-latest
+
+    env:
+      PACT_BROKER_URL: http://127.0.0.1:20201
+      CONSUMER_VERSION: ${{ github.sha }}
+      PROVIDER_VERSION: ${{ github.sha }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 1. Bootstrap Broker
+      - name: Start Pact Broker
+        run: docker compose --profile pact up -d --wait pact-broker
+
+      # 2. Generate Pact
+      - name: Generate consumer contract
+        run: pnpm test:contract
+
+      # 3. Publish Pact
+      - name: Publish consumer contract
+        run: |
+          curl --fail-with-body --silent --show-error \
+            -X PUT \
+            "$PACT_BROKER_URL/pacts/provider/marketplace-api/consumer/web/version/$CONSUMER_VERSION" \
+            -H 'Content-Type: application/json' \
+            -d @pacts/web-marketplace-api.json
+
+      # 4. Start provider
+      # Adapt this step to your existing Compose service.
+      # - name: Start provider
+      # run: docker compose up -d --wait marketplace-api
+
+      # 5. Verify provider
+      - name: Verify provider
+        run: pnpm verify:provider
+
+      # 6. Check deployability
+      - name: Check deployment compatibility
+        run: |
+          response=$(curl --fail-with-body --silent --show-error \
+            --get "$PACT_BROKER_URL/can-i-deploy" \
+            --data-urlencode "pacticipant=web" \
+            --data-urlencode "version=$CONSUMER_VERSION" \
+            --data-urlencode "to=prod")
+
+          echo "$response" | jq .
+
+          deployable=$(echo "$response" | jq -r '.deployable')
+
+          if [ "$deployable" != "true" ]; then
+            echo "::error::Contract compatibility check failed: deployable=$deployable"
+            exit 1
+          fi
+
+          echo "Contract compatibility check passed."
+
+      # 7. Cleanup
+      - name: Stop Pact Broker
+        if: always()
+        run: docker compose --profile pact down -v

@@ -4,10 +4,10 @@ import { NestFactory } from '@nestjs/core';
 import type { Env } from './config/index.js';
 
 import { AppModule } from './app.module.js';
+import configureApp from './configure-app.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableShutdownHooks();
+  const app = configureApp(await NestFactory.create(AppModule));
   const config = app.get(ConfigService<Env, true>);
   const port = config.get('PORT', { infer: true });
   await app.listen(port, async () => {

@@ -9,7 +9,7 @@ servers:
   - url: http://api.example.com/v1
 tags:
   - name: user
-  - name: product
+  - name: listing
   - name: order
   - name: sale
 paths:
@@ -40,14 +40,14 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ValidationProblem'
-  /products:
+  /listings:
     post:
       # TODO: add idempotency???
-      summary: Creates new product
-      description: Creates new product
-      operationId: createProduct
+      summary: Creates new listing
+      description: Creates new listing
+      operationId: createListing
       tags:
-        - product
+        - listing
       parameters:
         - name: Idempotency-Key
           in: header
@@ -56,17 +56,17 @@ paths:
             type: string
             format: uuid
           description: |
-            Client sends Idempotency-Key header to prevent duplicate product
-            creation.
-            Same key + same body –> 201 + Idempotency-Replay: true
-            Same key + body mismatch –> 422
-            Same key and response still in flight –> 409
+            Client sends Idempotency-Key header to prevent duplicate listing
+            creation.\
+            Same key + same body → 201 + Idempotency-Replay: true\
+            Same key + body mismatch → 422\
+            Same key and response still in flight → 409
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductCreate'
+              $ref: '#/components/schemas/ListingCreate'
       responses:
         '201':
           # TODO: add Location header
@@ -76,12 +76,12 @@ paths:
               schema:
                 type: boolean
               description: |
-                Client tries to repeat product creation using the
+                Client tries to repeat listing creation using the
                 same Idempotency-Key and body
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductResponse'
+                $ref: '#/components/schemas/ListingResponse'
         '400':
           description: Bad request
           content:
@@ -103,9 +103,9 @@ paths:
     get:
       summary: Get all products
       description: Get all products
-      operationId: listProducts
+      operationId: listListings
       tags:
-        - product
+        - listing
       parameters:
         # TODO: add limit
         - name: next_cursor
@@ -123,7 +123,7 @@ paths:
                 type: object
                 properties:
                   items:
-                    $ref: '#/components/schemas/ProductResponse'
+                    $ref: '#/components/schemas/ListingResponse'
                   next_cursor:
                     type: string
                     nullable: true
@@ -138,41 +138,47 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  /products/{productId}:
+  /listings/{listingId}:
     get:
-      summary: Get product by id
-      description: Get product by id
-      operationId: viewProductWithId
+      summary: Get listing by id
+      description: Get listing by id
+      operationId: viewListingWithId
       tags:
-        - product
+        - listing
       parameters:
-        - name: productId
+        - name: listingId
           in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Single product
+          description: Single listing
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductResponse'
-        '404':
-          description: Product doesn't exist
+                type: object
+                properties:
+                  data:
+                    nullable: true
+                    description: Listing or null if it doesn't exist
+                    allOf:
+                      - $ref: '#/components/schemas/ListingResponse'
+        '400':
+          description: 'Validation error: invalid listingId'
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
     patch:
       # TODO: requires auth check
-      summary: Update product by id
-      description: Update product by id
-      operationId: modifyProductWithId
+      summary: Update listing by id
+      description: Update listing by id
+      operationId: modifyListingWithId
       tags:
-        - product
+        - listing
       parameters:
-        - name: productId
+        - name: listingId
           in: path
           required: true
           schema:
@@ -182,44 +188,44 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductUpdate'
+              $ref: '#/components/schemas/ListingUpdate'
       responses:
         '200':
-          description: Single product
+          description: Single listing
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductResponse'
+                $ref: '#/components/schemas/ListingResponse'
         '400':
-          description: Product is invalid
+          description: Listing is invalid
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ValidationProblem'
         '404':
-          description: Product doesn't exist
+          description: Listing doesn't exist
           content:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
     delete:
       # TODO: requires auth check
-      summary: Delete product by id
-      description: Update product by id
-      operationId: deleteProductWithId
+      summary: Delete listing by id
+      description: Update listing by id
+      operationId: deleteListingWithId
       tags:
-        - product
+        - listing
       parameters:
-        - name: productId
+        - name: listingId
           in: path
           required: true
           schema:
             type: string
       responses:
         '204':
-          description: Product is suseccfuly deleted
+          description: Listing is suseccfuly deleted
         '404':
-          description: Product doesn't exist
+          description: Listing doesn't exist
           content:
             application/problem+json:
               schema:
@@ -349,7 +355,7 @@ paths:
                   qty:
                     type: integer
                     minimum: 1
-                    description: Products quantity
+                    description: Listings quantity
                   details:
                     description: List of products grouped by orders
                     type: array
@@ -364,22 +370,22 @@ paths:
                               price:
                                 type: integer
                                 minimum: 0
-                                description: Product price in minor units
+                                description: Listing price in minor units
                               qty:
                                 type: integer
                                 minimum: 0
-                                description: Products quantity
+                                description: Listings quantity
                               name:
                                 type: string
-                                description: Product name
-                              productId:
+                                description: Listing name
+                              listingId:
                                 type: string
                                 format: uuid
                             required:
                               - price
                               - qty
                               - name
-                              - productId
+                              - listingId
                 required:
                   - total
                   - currency
@@ -418,7 +424,7 @@ paths:
               type: object
               properties:
                 orders:
-                  description: Products grouped by order
+                  description: Listings grouped by order
                   type: array
                   items:
                     type: object
@@ -428,19 +434,19 @@ paths:
                         items:
                           type: object
                           properties:
-                            productId:
+                            listingId:
                               type: string
                               format: uuid
                             price:
                               type: integer
                               minimum: 0
-                              description: Product price per unit
+                              description: Listing price per unit
                             qty:
                               type: integer
                               minimum: 1
-                              description: Products quantity
+                              description: Listings quantity
                           required:
-                            - productId
+                            - listingId
                             - price
                             - qty
                     required:
@@ -481,89 +487,6 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-
-# /listings
-# /listings/123
-# /listings/all
-# /my-listings
-# /my-listings/123
-# /my-listings/123/offers/123/actions/reject
-# /my-listings/123/auctions/123/actions/cancel
-# /auctions
-# /auctions/123
-# /my-auctions/123/actions/cancel
-# /auctions/123/bids
-# /auctions/participating
-# /auctions/participating/123/bids
-# /me/listings
-# /me/listings/123
-# /user-listings
-# /user-listings/123
-# /listings?own=true
-
-# /health - GET public
-
-# /login POST - public
-# /register POST - public
-# /me GET - private
-# /me PATCH - private
-
-# /categories GET - public
-# /categories/:catId POST - private
-# /categories/:catId PATCH - private
-
-# /carts - GET public
-# /carts - PUT public
-# /carts/listings/123 - PATCH public
-# /carts/listings/123 - DELETE public
-
-# /orders
-# /orders/123
-# /sales/orders
-# /sales/orders/123
-# /sales/stats
-
-# VAR 1
-# /me/listings - GET private
-# /listings - POST private
-# /listings/123 - GET private
-# /listings/123 - PATCH private
-# /listings/123 - DELETE private
-# /me/listings/123/offers/123/actions/accept - POST private ???
-# /me/listings/123/offers/123/actions/reject - POST private ???
-# /listings/123/offers/123/actions/reject - POST private ???
-# /listings/123/me/offers/123/actions/cancel - POST private (???)
-# /listings – GET public
-# /listings/123 – GET public
-# /listings/123/offers – POST public
-# /listings/favorites - GET private
-# /listings/123/actions/watch - POST private
-
-# /me/auctions - GET private
-# /auctions/123 - GET private
-# /auctions/123 - PATCH private
-# /auctions/123 - DELETE private
-# /auctions - GET public
-# /auctions/participating - GET private
-# /auctions/participating/123 - GET private
-# /auctions/participating/123/bids - POST private
-
-# VAR 2
-# /listings - GET private
-# /listings/all - GET public
-# /listings?all=true - GET public
-# /listings - POST private
-# /listings/123 - GET private|public
-# /listings/123/offers - POST public
-# /listings/123/offers/123/actions/accept - POST private
-# /auctions - GET private
-# /auctions/all - GET public
-# /auctions/123 - GET private
-# /auctions/joined - GET private
-# /auctions/joined/123/bids - POST private
-
-# /admin/listing-reviews - GET private
-# /admin/listing-reviews/123 - PATCH private
 
 components:
   schemas:
@@ -631,16 +554,24 @@ components:
       required:
         - email
         - username
-    Product:
+    Listing:
       # TODO: add images
-      description: Base product schema
+      description: Base listing schema
       type: object
       properties:
-        productId:
+        listingId:
           type: string
           format: uuid
           readOnly: true
-        name:
+        categoryId:
+          type: string
+          format: uuid
+          readOnly: true
+        userId:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
           type: string
           example: Silent Hill HD Collection (Sony PlayStation 3, 2012)
         description:
@@ -649,7 +580,19 @@ components:
             Experience the two classic Silent Hill titles previously released on
             PlayStation 2, Silent Hill 2 & Silent Hill 3,
             that defined the Survival Horror genre in its early inception.
-            Silent Hill 2 & Silent Hill 3 critical acclaim from the previous console generation.
+            Silent Hill 2 & Silent Hill 3 critical acclaim from the previous
+            console generation.
+        itemCondition:
+          type: string
+          enum:
+            - new
+            - used
+        sellingMethod:
+          type: string
+          enum:
+            - fixed_price
+            - best_offer
+            - auction
         price:
           type: integer
           minimum: 0
@@ -657,32 +600,59 @@ components:
           example: 2390
         currency:
           type: string
-          example: USD
-        active:
-          type: boolean
-          example: true
-    ProductResponse:
-      description: Product schema for response
+          example: UAH
+        quantity:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum:
+            - on_review
+            - declined
+            - active
+            - inactive
+        createdAt:
+          type: string
+          example: '2026-10-13T00:24:22+00:00'
+        deletedAt:
+          type: string
+          nullable: true
+          example: null
+    ListingResponse:
+      description: Listing schema for response
       allOf:
-        - $ref: '#/components/schemas/Product'
+        - $ref: '#/components/schemas/Listing'
       required:
-        - name
+        - listingId
+        - categoryId
+        - userId
+        - title
         - description
+        - itemCondition
+        - sellingMethod
         - price
         - currency
-    ProductCreate:
-      description: Product schema for creation
+        - quantity
+        - createdAt
+        - deletedAt
+    ListingCreate:
+      description: Listing schema for creation
       allOf:
-        - $ref: '#/components/schemas/Product'
+        - $ref: '#/components/schemas/Listing'
       required:
-        - name
+        - categoryId
+        - userId
+        - title
         - description
+        - itemCondition
+        - sellingMethod
         - price
         - currency
-    ProductUpdate:
-      description: Product schema for update
+        - quantity
+    ListingUpdate:
+      description: Listing schema for update
       allOf:
-        - $ref: '#/components/schemas/Product'
+        - $ref: '#/components/schemas/Listing'
     Order:
       description: Order schema
       allOf:
@@ -744,7 +714,7 @@ components:
               sale: '#/components/schemas/SellerOrder'
               purchase: '#/components/schemas/BuyerOrder'
     OrderItem:
-      description: Specific product in the order
+      description: Specific listing in the order
       type: object
       properties:
         qty:
@@ -754,18 +724,18 @@ components:
         price:
           type: integer
           minimum: 0
-          description: Price per single product
+          description: Price per single listing
         currency:
           type: string
-          description: Product price currency
-        product:
+          description: Listing price currency
+        listing:
           # TODO: return less details
-          $ref: '#/components/schemas/ProductResponse'
+          $ref: '#/components/schemas/ListingResponse'
       required:
         - qty
         - price
         - currency
-        - product
+        - listing
     SellerOrder:
       type: object
       properties:
@@ -802,3 +772,87 @@ components:
       required:
         - orderType
         - seller
+
+# /listings
+# /listings/123
+# /listings/all
+# /my-listings
+# /my-listings/123
+# /my-listings/123/offers/123/actions/reject
+# /my-listings/123/auctions/123/actions/cancel
+# /auctions
+# /auctions/123
+# /my-auctions/123/actions/cancel
+# /auctions/123/bids
+# /auctions/participating
+# /auctions/participating/123/bids
+# /me/listings
+# /me/listings/123
+# /user-listings
+# /user-listings/123
+# /listings?own=true
+
+# /health - GET public
+
+# /login POST - public
+# /register POST - public
+# /me GET - private
+# /me PATCH - private
+
+# /categories GET - public
+# /categories/:catId POST - private
+# /categories/:catId PATCH - private
+
+# /carts - GET public
+# /carts - PUT public
+# /carts/listings/123 - PATCH public
+# /carts/listings/123 - DELETE public
+
+# /orders
+# /orders/123
+# /sales/orders
+# /sales/orders/123
+# /sales/stats
+
+# VAR 1
+# /me/listings - GET private
+# /listings - POST private
+# /listings/123 - GET private
+# /listings/123 - PATCH private
+# /listings/123 - DELETE private
+# /me/listings/123/offers/123/actions/accept - POST private ???
+# /me/listings/123/offers/123/actions/reject - POST private ???
+# /listings/123/offers/123/actions/reject - POST private ???
+# /listings/123/me/offers/123/actions/cancel - POST private (???)
+# /me/offers/123/actions/cancel - POST priv ???
+# /listings – GET public
+# /listings/123 – GET public
+# /listings/123/offers – POST public
+# /listings/favorites - GET private
+# /listings/123/actions/watch - POST private
+
+# /me/auctions - GET private
+# /auctions/123 - GET private
+# /auctions/123 - PATCH private
+# /auctions/123 - DELETE private
+# /auctions - GET public
+# /auctions/participating - GET private
+# /auctions/participating/123 - GET private
+# /auctions/participating/123/bids - POST private
+
+# VAR 2
+# /listings - GET private
+# /listings/all - GET public
+# /listings?all=true - GET public
+# /listings - POST private
+# /listings/123 - GET private|public
+# /listings/123/offers - POST public
+# /listings/123/offers/123/actions/accept - POST private
+# /auctions - GET private
+# /auctions/all - GET public
+# /auctions/123 - GET private
+# /auctions/joined - GET private
+# /auctions/joined/123/bids - POST private
+
+# /admin/listing-reviews - GET private
+# /admin/listing-reviews/123 - PATCH private

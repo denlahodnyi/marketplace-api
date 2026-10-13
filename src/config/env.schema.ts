@@ -9,7 +9,14 @@ export const envSchema = z.object({
   DB_NAME: z.string().min(1),
   DB_PORT: z.coerce.number().int().min(1).max(65535),
   DB_HOST: z.string().min(1),
-  DB_URL: z.url({ protocol: /^postgresql$/ }),
+  DB_URL: z.url({ protocol: /^postgre|sql$/ }),
+  TEST_DB_URL: z
+    .xor([
+      z.literal('').transform((v) => (v.length ? v : undefined)),
+      z.url({ protocol: /^postgre|sql$/ }),
+    ])
+    .optional(),
+  PACT_BROKER_URL: z.url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

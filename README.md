@@ -99,6 +99,8 @@ DB_HOST=pgbouncer
 DB_PORT=5433
 # Postgres full connection url
 DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+# (optional) Pact broker
+# PACT_BROKER_URL=http://127.0.0.1:20201
 ```
 
 ### How to start
@@ -213,6 +215,62 @@ for the duration of the transaction. This is a golden mean between Session and
 Statement modes. Session mode is almost the same as no pooling, while Statement mode
 is too strict. Caveats: session-wide features are not available (e.g., advisory
 lock, `SET`, `RESET`, `LISTEN`, `NOTIFY`, etc).
+
+## Tests
+
+```sh
+# Unit
+pnpm test
+
+# Integration
+pnpm test:integration
+
+# E2E
+pnpm test:e2e
+```
+
+Test isolation strategy:
+
+- ROLLBACK for integration tests – fast enough for this type of tests, no need
+  for session-wide features
+- TRUNCATE for E2E – fast enough too, allows testing code that manages
+  transactions itself
+
+### Pact
+
+```sh
+# Generate pact – consumer expectations
+pnpm test:contract
+
+# Verify pact against real backend locally without broker (no PACT_BROKER_URL)
+pnpm verify:provider
+```
+
+Example publication and verification via Pact Broker:
+
+```sh
+# Bootstrap broker
+docker compose --profile pact up -d --wait pact-broker
+
+# Publish pact to the broker (generate pact file using pnpm test:contract)
+curl -s -X PUT 'http://127.0.0.1:20201/pacts/provider/marketplace-api/consumer/web/version/1.0.0' -H 'Content-Type: application/json' -d @pacts/web-marketplace-api.json -o /dev/null -w 'publish → %{http_code}\n'
+
+# Deployable? "deployable":null = No
+curl -s 'http://127.0.0.1:20201/can-i-deploy?pacticipant=web&version=1.0.0&to=prod'
+
+# Verify –> output: "...is being verified..."
+# Requires PACT_BROKER_URL (in .env or inline)
+pnpm verify:provider
+
+# Publish verification
+curl -s -X PUT 'http://127.0.0.1:20201/pacticipants/marketplace-api/versions/1.0.0/tags/prod' -H 'Content-Type: application/json' -o /dev/null -w 'tag marketplace-api@1.0.0 → prod: %{http_code}\n'
+
+# Deployable? "deployable":true = Yes
+curl -s 'http://127.0.0.1:20201/can-i-deploy?pacticipant=web&version=1.0.0&to=prod'
+
+# Stop and remove broker
+docker compose --profile pact down -v
+```
 
 ## Grading
 
