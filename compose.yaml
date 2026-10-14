@@ -94,6 +94,46 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
+
+  pact-broker-db:
+    container_name: marketplace_pact_broker_db
+    profiles:
+      - pact
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_USER: broker
+      POSTGRES_PASSWORD: broker
+      POSTGRES_DB: broker
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U broker -d broker"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  pact-broker:
+    container_name: marketplace_pact_broker
+    profiles:
+      - pact
+    image: pactfoundation/pact-broker:2.142.0-pactbroker2.120.0
+    ports:
+      - "20201:9292"
+    environment:
+      PACT_BROKER_DATABASE_URL: postgres://broker:broker@pact-broker-db/broker
+      PACT_BROKER_ALLOW_PUBLIC_READ: "true"
+    depends_on:
+      pact-broker-db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        # Must be 127.0.0.1 (localhost = ::1 inside, but puma listens only IPv4)
+        [
+          "CMD-SHELL",
+          "wget -q -O /dev/null http://127.0.0.1:9292/diagnostic/status/heartbeat",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
 volumes:
   marketplace_db:
     name: marketplace_db

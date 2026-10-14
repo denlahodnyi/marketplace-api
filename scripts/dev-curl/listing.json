@@ -1,0 +1,12 @@
+{
+  "userId": "01a0f36f-82b4-7caf-abc9-b6ea879ac6f3",
+  "categoryId": "01a0f36f-82af-7915-833c-3b103c03fdd9",
+  "title": "Мала капібара",
+  "itemCondition": "new",
+  "sellingMethod": "fixed_price",
+  "description": "Пухка іграшка",
+  "price": 30000,
+  "currency": "UAH",
+  "quantity": 2,
+  "status": "active"
+}

@@ -1,0 +1,3 @@
+export const TEST_LISTING_ID = '01a1317d-f060-7c48-b9f0-89f651724cd1';
+export const TEST_CATEGORY_ID = '01a13217-92f2-7173-83fe-e448c7667bd2';
+export const TEST_CUSTOMER_ID = '01a1317d-f060-7c48-b9f0-89f651724cd1';

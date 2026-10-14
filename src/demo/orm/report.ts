@@ -15,7 +15,7 @@ const dataSource = new DataSource({
 
 await dataSource.initialize();
 
-// Top 5 listings by competed orders
+// Top 5 listings by completed orders
 const result = await dataSource
   .createQueryBuilder()
   .select([

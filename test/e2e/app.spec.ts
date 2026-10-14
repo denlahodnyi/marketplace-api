@@ -2,10 +2,23 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module.js';
+import type { SamplePg } from '../testKit/startPg.js';
+
+import { AppModule } from '../../src/app.module.js';
+import startPg from '../testKit/startPg.js';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
+  let pg: SamplePg;
+
+  beforeAll(async () => {
+    pg = await startPg();
+    process.env.TEST_DB_URL = pg.connectionUri;
+  });
+
+  afterAll(async () => {
+    await pg.stop();
+  });
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
