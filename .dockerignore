@@ -1,6 +1,11 @@
 node_modules
 dist
 secrets/*
+db
+backups
+infra
+pacts
+
 .vscode
 .env
 .git

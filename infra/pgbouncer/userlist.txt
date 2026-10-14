@@ -1,0 +1,2 @@
+"app_user" "app-v1-password"
+"admin" "some_strong_password"

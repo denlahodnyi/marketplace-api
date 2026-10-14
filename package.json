@@ -30,6 +30,8 @@
     "migrate:generate": "bash scripts/with-secrets.sh && typeorm-ts-node-esm migration:generate -d src/data-source.ts --pretty src/migrations/$NAME",
     "migrate:show": "bash scripts/with-secrets.sh && typeorm-ts-node-esm migration:show -d src/data-source.ts",
     "drop-schema": "bash scripts/with-secrets.sh && typeorm-ts-node-esm schema:drop -d src/data-source.ts",
+    "backup": "bash scripts/backup.sh",
+    "backup:drill": "bash scripts/restore-drill.sh",
     "seed": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/seed.ts",
     "demo:nplus1": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/orm/demo-nplus1.ts",
     "demo:report": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/orm/report.ts",

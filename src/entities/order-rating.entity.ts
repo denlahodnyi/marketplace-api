@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
 } from 'typeorm';
 
@@ -25,7 +26,7 @@ export class OrderRating extends primaryAsUuidEntityFactory('ratingId') {
   @Column('uuid', { nullable: false })
   orderId: string;
 
-  @OneToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'buyer_id' })
   buyer: User;
 
