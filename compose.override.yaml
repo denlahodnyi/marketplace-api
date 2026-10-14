@@ -34,6 +34,3 @@ services:
         - path: .env
           include: .env
           action: restart
-  db:
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro

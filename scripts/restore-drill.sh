@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 
-BACKUP_DIR="$(pwd)/backups"
+source "$(dirname "$0")/lib.sh"
+
+BACKUP_DIR="$PWD/backups"
 DB_USER="${DB_USER:-admin}"
 DB_NAME="${DB_NAME:-market}"
-DUMP_FILE=$1
+DUMP_FILE="$1"
 
 if [[ ! $DUMP_FILE ]]; then
-  echo "❌ Pass dump file to the arguments"
-  exit 1
+  DUMP_FILE=$(get_latest_backup)
+else
+  DUMP_FILE="$BACKUP_DIR/$DUMP_FILE"
 fi
 
-if [[ -e "$BACKUP_DIR/$DUMP_FILE" ]]; then
-  echo "✓ Backup file exists"
+if [[ -e $DUMP_FILE ]]; then
+  echo "✓ Backup file $DUMP_FILE exists"
 else
   echo "❌ Cannot find backup file"
   exit 1

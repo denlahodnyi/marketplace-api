@@ -195,7 +195,8 @@ Backup drill:
 
 ```sh
 docker compose up -d db --wait
-pnpm backup:drill backup_file.dump
+# Finds the the latest file in backups/ or pass the file name explicitly (e.g., backup_file.dump)
+pnpm backup:drill
 ```
 
 PgBouncer admin console:
