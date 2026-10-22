@@ -45,12 +45,12 @@ CREATE TABLE IF NOT EXISTS listings (
 );
 
 CREATE TABLE IF NOT EXISTS listing_admin_reviews (
-    listing_id uuid REFERENCES listings (listing_id),
-    admin_id uuid REFERENCES users (user_id),
+    review_id uuid PRIMARY KEY,
+    listing_id uuid NOT NULL REFERENCES listings (listing_id),
+    admin_id uuid NOT NULL REFERENCES users (user_id),
     status text NOT NULL CHECK (status IN ('accept', 'decline')),
     decline_reason text,
     reviewed_at timestamptz NOT NULL,
-    PRIMARY KEY (listing_id, admin_id),
     CONSTRAINT check_decline_has_reason CHECK (status != 'decline' OR decline_reason IS NOT NULL)
 );
 

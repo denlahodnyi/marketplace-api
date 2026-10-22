@@ -5,12 +5,17 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   SerializeOptions,
   UseInterceptors,
 } from '@nestjs/common';
 
-import { CreateListingDto, ListingResponse } from './listing.dto.js';
+import {
+  CreateListingDto,
+  ListingResponse,
+  UpdateListingDto,
+} from './listing.dto.js';
 import { ListingsService } from './listing.service.js';
 
 @Controller('listings')
@@ -31,5 +36,15 @@ export class ListingsController {
     @Param('listingId', new ParseUUIDPipe({ version: '7' })) listingId: string,
   ): Promise<ListingResponse | null> {
     return this.listingsService.findListingById(listingId);
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ type: ListingResponse })
+  @Patch(':listingId')
+  modifyListingWithId(
+    @Param('listingId', new ParseUUIDPipe({ version: '7' })) listingId: string,
+    @Body() body: UpdateListingDto,
+  ): Promise<ListingResponse> {
+    return this.listingsService.updateListing(listingId, body);
   }
 }

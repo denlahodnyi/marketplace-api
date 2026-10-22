@@ -28,10 +28,10 @@ export class Order extends primaryAsUuidEntityFactory('orderId') {
   @OneToOne('OrderRating', (orderRating: OrderRating) => orderRating.order)
   rating: OrderRating;
 
-  @OneToMany('Payment', (payment: Payment) => payment.order)
+  @OneToOne('Payment', (payment: Payment) => payment.order, { cascade: true })
   payment: Payment;
 
-  @OneToMany('OrderLine', (ol: OrderLine) => ol.order)
+  @OneToMany('OrderLine', (ol: OrderLine) => ol.order, { cascade: true })
   lines: OrderLine[];
 
   @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })

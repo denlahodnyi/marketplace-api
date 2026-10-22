@@ -1,13 +1,7 @@
-import {
-  Check,
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryColumn,
-} from 'typeorm';
+import { Check, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 import { Listing } from './listing.entity.js';
+import { primaryAsUuidEntityFactory } from './shared.js';
 import { User } from './user.entity.js';
 
 @Entity('listing_admin_reviews')
@@ -16,11 +10,11 @@ import { User } from './user.entity.js';
   `"status" != 'decline' OR "decline_reason" IS NOT NULL`,
 )
 @Check(`"status" IN ('accept', 'decline')`)
-export class ListingAdminReview {
-  @PrimaryColumn('uuid', { default: () => 'uuidv7()' })
+export class ListingAdminReview extends primaryAsUuidEntityFactory('reviewId') {
+  @Column('uuid', { nullable: false })
   listingId: string;
 
-  @PrimaryColumn('uuid', { default: () => 'uuidv7()' })
+  @Column('uuid', { nullable: false })
   adminId: string;
 
   @ManyToOne(() => Listing, { nullable: false, onDelete: 'RESTRICT' })

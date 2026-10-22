@@ -10,6 +10,7 @@ import {
   OneToMany,
 } from 'typeorm';
 
+import type { ListingAdminReview } from './listingAdminReview.entity.js';
 import type { Offer } from './offer.entity.js';
 
 import { Category } from './category.entity.js';
@@ -26,6 +27,12 @@ import { User } from './user.entity.js';
 export class Listing extends primaryAsUuidEntityFactory('listingId') {
   @OneToMany('Offer', (offer: Offer) => offer.listing)
   offers: Offer[];
+
+  @OneToMany(
+    'ListingAdminReview',
+    (adminReview: ListingAdminReview) => adminReview.listing,
+  )
+  adminReviews: ListingAdminReview[];
 
   @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'user_id' })

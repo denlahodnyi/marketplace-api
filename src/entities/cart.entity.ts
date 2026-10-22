@@ -1,4 +1,11 @@
-import { Entity, JoinColumn, OneToMany, OneToOne, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  Unique,
+} from 'typeorm';
 
 import type { CartDetail } from './cart-details.entity.js';
 
@@ -14,4 +21,7 @@ export class Cart extends primaryAsUuidEntityFactory('cartId') {
   @OneToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column('uuid', { nullable: false })
+  userId: string;
 }

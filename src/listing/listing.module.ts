@@ -9,5 +9,6 @@ import { ListingsService } from './listing.service.js';
   imports: [TypeOrmModule.forFeature([Listing])],
   controllers: [ListingsController],
   providers: [ListingsService],
+  exports: [ListingsService, TypeOrmModule],
 })
 export class ListingsModule {}

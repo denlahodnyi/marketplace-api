@@ -290,3 +290,71 @@ export DB_URL=...
 export SKIP_VAULT=1
 <script>
 ```
+
+## Trade-offs
+
+WebSockets demo:
+
+```sh
+# Start application
+pnpm start
+# Run demo
+pnpm demo:realtime
+```
+
+SSE demo (uses order created on WS demo):
+
+```sh
+# Start application
+pnpm start
+# Change order status multiple times
+curl -s localhost:3000/orders/01a15f93-884a-72e0-9668-85c6ec525bb3/actions/status-change \
+      -X PATCH -d '{"status":"pending"}' \
+      -H "X-User-Id: 01a15f93-884a-72d6-ab8e-e3b8da66e16c" \
+      -H "Content-Type: application/json" \
+      -w "%{http_code}" \
+      -o /dev/null
+
+curl -s localhost:3000/orders/01a15f93-884a-72e0-9668-85c6ec525bb3/actions/status-change \
+      -X PATCH -d '{"status":"confirmed"}' \
+      -H "X-User-Id: 01a15f93-884a-72d6-ab8e-e3b8da66e16c" \
+      -H "Content-Type: application/json" \
+      -w "%{http_code}" \
+      -o /dev/null
+
+curl -s localhost:3000/orders/01a15f93-884a-72e0-9668-85c6ec525bb3/actions/status-change \
+      -X PATCH -d '{"status":"delivered"}' \
+      -H "X-User-Id: 01a15f93-884a-72d6-ab8e-e3b8da66e16c" \
+      -H "Content-Type: application/json" \
+      -w "%{http_code}" \
+      -o /dev/null
+
+curl -s localhost:3000/orders/01a15f93-884a-72e0-9668-85c6ec525bb3/actions/status-change \
+      -X PATCH -d '{"status":"completed"}' \
+      -H "X-User-Id: 01a15f93-884a-72d6-ab8e-e3b8da66e16c" \
+      -H "Content-Type: application/json" \
+      -w "%{http_code}" \
+      -o /dev/null
+
+# View all events
+curl -sN --max-time 2 http://localhost:3000/orders/01a15f93-884a-72e0-9668-85c6ec525bb3/events
+# ...or from specific ID
+curl -sN --max-time 2 http://localhost:3000/orders/01a15f93-884a-72e0-9668-85c6ec525bb3/events -H "Last-Event-ID: 3"
+```
+
+WebSockets vs SSE
+
+|                    | SSE                                                        | WS                                                                        |
+| ------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Direction          | Unidirectional (Server-to-Client)                          | Bidirectional                                                             |
+| Reconnect/Recovery | Has built-in reconnect and continuation with Last-Event-ID | Only with external lib (Socket.io)                                        |
+| Infra              | Browser supports (same HTTP)                               | Separate protocol; browser supports but Socket.io requires its own client |
+| Price per event    | ~0 latency                                                 | ~0 latency                                                                |
+
+For notifications in prod I would choose SSE – cheap and simple, doesn't require
+bidirectional communication.
+
+WebSockets (Socket.io) issue with multiple instances: client that live on
+separate instances won't see each other messages. Solution: use non-default
+adapter. For example, Redis Pub/Sub adapter allows using Redis as a single
+source of truth for subscribed instances.
