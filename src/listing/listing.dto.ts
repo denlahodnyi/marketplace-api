@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { Exclude } from 'class-transformer';
 import {
   IsIn,
@@ -46,9 +47,11 @@ export class CreateListingDto {
   @Min(1)
   quantity: number;
 
-  @IsIn(['on_review', 'declined', 'active', 'inactive'])
-  status: 'on_review' | 'declined' | 'active' | 'inactive';
+  // @IsIn(['on_review', 'declined', 'active', 'inactive'])
+  // status: 'on_review' | 'declined' | 'active' | 'inactive';
 }
+
+export class UpdateListingDto extends PartialType(CreateListingDto) {}
 
 export class ListingResponse {
   listingId: string;
@@ -71,4 +74,10 @@ export class ListingResponse {
   constructor(partial: Partial<Listing>) {
     Object.assign(this, partial);
   }
+}
+
+export class DeclineListingDto {
+  @IsString()
+  @MaxLength(250)
+  reason: string;
 }

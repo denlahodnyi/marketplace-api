@@ -856,3 +856,5 @@ components:
 
 # /admin/listing-reviews - GET private
 # /admin/listing-reviews/123 - PATCH private
+# /admin/moderation/listings - GET private
+# /admin/moderation/listings/123 - PATCH private
