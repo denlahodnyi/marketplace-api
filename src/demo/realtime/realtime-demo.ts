@@ -1,9 +1,9 @@
 import { exec } from 'node:child_process';
 import { io } from 'socket.io-client';
 
-import { dataSource } from '../src/data-source.js';
-import { Order } from '../src/entities/order.entity.js';
-import { User } from '../src/entities/user.entity.js';
+import { dataSource } from '../../data-source.js';
+import { Order } from '../../entities/order.entity.js';
+import { User } from '../../entities/user.entity.js';
 
 const URL = 'http://localhost:3000/orders';
 const SELLER_ID = '01a15f93-884a-727c-afcf-c3a373a3ab63';

@@ -9,7 +9,7 @@ import {
   Sse,
   type MessageEvent,
 } from '@nestjs/common';
-import { filter, map, skipWhile, tap, type Observable } from 'rxjs';
+import { filter, map, skipWhile, type Observable } from 'rxjs';
 
 import type { Order } from '../entities/order.entity.js';
 
@@ -33,10 +33,10 @@ export class OrderController {
     const order = await this.orderService.getOrder(orderId);
     if (order?.buyerId !== userId) throw new ForbiddenException();
     const result = await this.orderService.changeStatus(orderId, body.status);
-    this.orderEventsService.events.next({ event: 'status_change', ...result });
+    this.orderEventsService.pushEvent({ event: 'status_change', ...result });
   }
 
-  @Header('X-SSE', 'true') // Allows skips transform interceptor
+  @Header('X-SSE', 'true') // Allows skipping transform interceptor
   @Sse(':orderId/events')
   subscribeOnOrderEvents(
     @Param('orderId') orderId: string,
@@ -46,16 +46,16 @@ export class OrderController {
     return this.orderEventsService.events.pipe(
       filter((data) => data.orderId === orderId),
       map(
-        (data, i) =>
+        (data) =>
           ({
-            id: (i + 1).toString(),
+            id: data.id.toString(),
             type: data.event,
             data: { status: data.status, orderId: data.orderId },
             retry: 2000,
           }) as MessageEvent,
       ),
-      skipWhile((_, i) =>
-        lastId && Number(lastId) ? i <= Number(lastId) - 1 : false,
+      skipWhile((d) =>
+        lastId && Number(lastId) ? Number(d.id) <= Number(lastId) : false,
       ),
     );
   }

@@ -40,7 +40,7 @@
     "demo:race": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/race.ts",
     "demo:workers": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/queue.ts",
     "demo:retry": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/concurrency/retry.ts",
-    "demo:realtime": "node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm scripts/realtime-demo.ts"
+    "demo:realtime": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/realtime/realtime-demo.ts"
   },
   "scarfSettings": {
     "enabled": false
