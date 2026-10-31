@@ -77,3 +77,53 @@ User stories:
   relations; may need complex analytical queries
 
 ## Decisions journal
+
+## Configuration
+
+### Environment variables
+
+Copy to .env
+
+```env
+# (optional) Port used by server
+PORT=3000
+# Postgres user name
+DB_USER=admin
+# Postgres password
+DB_PASSWORD=some_strong_password
+# Postgres database name
+DB_NAME=market
+# Postgres database port
+DB_PORT=5432
+```
+
+### How to start
+
+Local development:
+
+```sh
+# install dependencies
+pnpm i
+# run dev server
+pnpm start:dev
+```
+
+Local development using Docker (server listens at port `3000`):
+
+```sh
+docker compose up -d
+```
+
+Database user's password rotation example:
+
+1. Create "db_password" file in "secrets" folder with initial password (must
+   match with password in
+   init.sql; default is `app-v1-password`).
+2. Start docker: `docker compose up -d`
+3. Make request `curl -s localhost:3000/db` and remember `uptimeSec` from the
+   response
+4. Make password rotation: call `bash rotate.sh`
+5. Make another request and compare elapsed time using `uptimeSec` – it must
+   increase (rotation happen without restart).
+6. Stop docker: `docker compose down -v`. On next start make sure that initial
+   passwords match (as in the first step)

@@ -1,0 +1,14 @@
+node_modules
+dist
+secrets/*
+.vscode
+.env
+.git
+.gitignore
+tsconfig.build.tsbuildinfo
+*.dockerignore
+Dockerfile*
+*.md
+*oxfmt*
+*oxlint*
+*prettier*

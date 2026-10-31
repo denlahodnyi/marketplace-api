@@ -1,0 +1,39 @@
+services:
+  api:
+    build:
+      target: builder
+    expose:
+      - "3000"
+    ports:
+      - "127.0.0.1:3000:3000"
+    command: ["pnpm", "start:dev"]
+    volumes:
+      - ./secrets/db_password:/app/secrets/db_password
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e "fetch(\"http://localhost:3000/health\").then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))"',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    develop:
+      watch:
+        - path: src
+          target: /app/src
+          action: sync+restart
+          initial_sync: true
+          ignore:
+            - node_modules/
+            - dist/
+            - test/
+        - path: package.json
+          action: rebuild
+        - path: .env
+          include: .env
+          action: restart
+  db:
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
