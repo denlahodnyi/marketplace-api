@@ -145,3 +145,41 @@ Database user's password rotation example:
    increase (rotation happen without restart).
 6. Stop docker: `docker compose down -v`. On next start make sure that initial
    passwords match (as in the first step)
+
+### MIgrations and seeding
+
+Migrations:
+
+```sh
+NAME=your_migration_name pnpm migrate:generate # Generate migration
+pnpm migrate # Run migration
+pnpm migrate:revert # Revert migration
+pnpm migrate:show # List migrations
+```
+
+Seeding (dangerous: it drops database):
+
+```sh
+pnpm seed
+```
+
+## Demo
+
+### N+1
+
+Naive: ≥ 5 (1 query for customers (5 items) + 1 query per each customer in a loop)
+
+Fixed: 1 (single query for customers and listings using QueryBuilder)
+
+```sh
+pnpm demo:nplus1
+```
+
+### Report using QueryBuilder
+
+Repository vs QueryBuilder: use QueryBuilder when simple queries are not enough
+(CTE, subqueries, aggregations)
+
+```sh
+pnpm demo:report
+```

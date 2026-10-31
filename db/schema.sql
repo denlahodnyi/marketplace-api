@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_salt text,
     phone text,
     user_role text NOT NULL CHECK (user_role IN ('admin', 'customer')),
-    created_at timestamptz DEFAULT now() NOT NULL
+    created_at   DEFAULT now() NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS categories (
