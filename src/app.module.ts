@@ -13,6 +13,7 @@ import { validateEnv, type Env } from './config/index.js';
 import { dataSourceOptions } from './data-source.js';
 import { ListingsModule } from './listing/listing.module.js';
 import { OrderModule } from './order/order.module.js';
+import { NotificationModule } from './notification/notification.module.js';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { OrderModule } from './order/order.module.js';
     CartModule,
     CheckoutModule,
     OrderModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

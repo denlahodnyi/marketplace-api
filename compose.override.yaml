@@ -2,6 +2,8 @@ services:
   backend:
     build:
       target: builder
+    environment:
+      - ORDER_NOTIFICATIONS_QUEUE_PREFETCH=${ORDER_NOTIFICATIONS_QUEUE_PREFETCH} # For the demo
     expose:
       - "3000"
     ports:
