@@ -35,26 +35,29 @@ export class NotificationService {
           body: '',
           data: { orderId: data.orderId },
         })
-        .orIgnore()
+        .orIgnore() // <-- ON CONFLICT DO NOTHING
         .returning(['notificationId'])
         .execute();
-      await tx
-        .createQueryBuilder()
-        .insert()
-        .into(NotificationDelivery)
-        .values([
-          {
-            notificationId: notifRes.generatedMaps[0].notificationId,
-            status: 'delivered',
-            channel: 'in_app',
-          },
-          {
-            notificationId: notifRes.generatedMaps[0].notificationId,
-            status: 'pending',
-            channel: 'email',
-          },
-        ])
-        .execute();
+
+      if (notifRes?.generatedMaps?.[0]) {
+        await tx
+          .createQueryBuilder()
+          .insert()
+          .into(NotificationDelivery)
+          .values([
+            {
+              notificationId: notifRes.generatedMaps[0].notificationId,
+              status: 'delivered',
+              channel: 'in_app',
+            },
+            {
+              notificationId: notifRes.generatedMaps[0].notificationId,
+              status: 'pending',
+              channel: 'email',
+            },
+          ])
+          .execute();
+      }
     });
 
     // TODO: send email

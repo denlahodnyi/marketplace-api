@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 docker compose up -d backend --wait
 docker compose exec -T backend pnpm seed --listings=2 --orders=0 --progress=false >/dev/null
 
@@ -57,7 +59,7 @@ dlq=$(echo "$stats_dlq" | jq -e '.message_stats.deliver // 0')
 
 echo "published=$published"
 echo "delivered=$delivered"
-echo "effects=$effect"
+echo "effect=$effect"
 echo "acked=$acked"
 echo "dlq=$dlq"
 echo "prefetch=$prefetch"

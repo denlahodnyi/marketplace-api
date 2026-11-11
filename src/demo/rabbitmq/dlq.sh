@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Bootstrap app and broker
 ORDER_NOTIFICATIONS_QUEUE_PREFETCH=1 docker compose up -d backend --wait
 docker compose exec -T backend pnpm seed --listings=2 --orders=0 --progress=false >/dev/null
@@ -85,7 +87,7 @@ prefetch=$(curl -s -u app:app 'http://localhost:20301/api/consumers/%2F?columns=
 stats=$(curl -s -u app:app 'http://localhost:20301/api/queues/%2F/marketplace.orders.notifications?columns=name,delivery_limit,messages,messages_dlx,message_stats.publish,message_stats.deliver,message_stats.ack')
 stats_dlq=$(curl -s -u app:app 'http://localhost:20301/api/queues/%2F/marketplace.dlq?columns=name,delivery_limit,messages,messages_dlx,message_stats.publish,message_stats.deliver,message_stats.ack')
 
-work=$(echo "$stats" | jq -e '.message_stats.deliver // 0')
+work=$(echo "$stats" | jq -e '.messages // 0')
 dlq=$(echo "$stats_dlq" | jq -e '.message_stats.deliver // 0')
 effect=$(docker compose exec -T db psql -p 5432 -U admin -h 127.0.0.1 -d market -q -t -A -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) FROM notifications;")
 reason=$(
@@ -97,7 +99,7 @@ reason=$(
 echo "prefetch=$prefetch"
 echo "work=$work"
 echo "dlq=$dlq"
-echo "effects=$effect"
+echo "effect=$effect"
 echo "dlq-reason=$reason"
 
 docker compose down -v &>/dev/null

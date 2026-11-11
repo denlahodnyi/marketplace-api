@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Bootstrap app and broker
 docker compose up -d backend --wait
 docker compose exec -T backend pnpm seed --listings=2 --orders=0 --progress=false >/dev/null
