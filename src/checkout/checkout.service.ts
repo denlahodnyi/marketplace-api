@@ -1,12 +1,5 @@
-import {
-  ConflictException,
-  HttpStatus,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
-import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
+import { ConflictException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
-import { v7 as uuidV7 } from 'uuid';
 
 import type { ProblemJson } from '../common/filters/problem.filter.js';
 
@@ -16,34 +9,37 @@ import { Cart } from '../entities/cart.entity.js';
 import { Listing } from '../entities/listing.entity.js';
 import { OrderLine } from '../entities/order-line.entity.js';
 import { Order } from '../entities/order.entity.js';
+import { Outbox } from '../entities/outbox.entity.js';
 import { Payment } from '../entities/payment.entity.js';
-import {
-  RMQ_EVENTS,
-  RMQ_TOKENS,
-  type OrderCreatedMessage,
-} from '../rabbitmq-setup.js';
+import { OutboxService } from '../outbox/outbox.service.js';
+import { RMQ_EVENTS, type OrderCreatedMessage } from '../rabbitmq-setup.js';
 
-interface CheckoutDetails {
-  shippingAddress: {
-    country: string;
-    city: string;
-    addressLine: string;
-    postalCode: string;
-  };
-}
+// interface CheckoutDetails {
+//   shippingAddress: {
+//     country: string;
+//     city: string;
+//     addressLine: string;
+//     postalCode: string;
+//   };
+// }
 
 @Injectable()
 export class CheckoutService {
   constructor(
-    @Inject(RMQ_TOKENS.ordersNotifications)
-    private readonly rmq: ClientProxy,
     private readonly dataSource: DataSource,
+    private readonly outboxService: OutboxService,
   ) {}
 
   getCheckout() {}
 
-  async confirmCheckout(userId: string) {
+  async confirmCheckout(userId: string, idempotencyKey: string) {
     const result = await this.dataSource.transaction(async (tx) => {
+      const duplicateOrder = await tx.getRepository(Order).findOne({
+        where: { idempotencyKey },
+        relations: { lines: true, payment: true },
+      });
+      if (duplicateOrder) return duplicateOrder;
+
       const cart = await tx.getRepository(Cart).findOne({
         where: { userId },
         relations: { details: { listing: true } },
@@ -156,17 +152,31 @@ export class CheckoutService {
           cart.details.map(({ cartId, listingId }) => ({ cartId, listingId })),
         );
 
+      // Outbox record
+      const outboxRepo = tx.getRepository(Outbox);
+      await outboxRepo.save(
+        createdOrders.map((order) =>
+          outboxRepo.create({
+            aggregateType: 'Order',
+            aggregateId: order.orderId,
+            type: RMQ_EVENTS.orderCreated,
+            payload: {
+              orderId: order.orderId,
+              placedAt: new Date().toISOString(),
+            } satisfies OrderCreatedMessage,
+          }),
+        ),
+      );
+
+      if (process.env.ENABLE_CRASH_WRITE === 'true') {
+        throw new Error('Simulated failed business operation');
+      }
+
       return createdOrders;
     });
-    result.forEach((o) => {
-      const message = new RmqRecordBuilder({
-        orderId: o.orderId,
-        occurredAt: new Date().toISOString(),
-      } satisfies OrderCreatedMessage)
-        .setOptions({ messageId: uuidV7(), type: RMQ_EVENTS.orderCreated })
-        .build();
-      this.rmq.emit(RMQ_EVENTS.orderCreated, message);
-    });
+
+    await this.outboxService.relay();
+
     return result;
   }
 }

@@ -46,6 +46,7 @@ const IDS = {
   ],
   admins: ['01a191ce-5235-7e4f-970a-3abbdc19ef15'],
   listings: [
+    // All listings are owned by the first customer
     '01a19801-2d38-73b5-9312-0d738bd16be4',
     '01a191ce-5236-72dd-b786-f16614df1980',
   ],

@@ -43,7 +43,10 @@
     "demo:realtime": "bash scripts/with-secrets.sh && node --no-deprecation --disable-warning=ExperimentalWarning --loader ts-node/esm src/demo/realtime/realtime-demo.ts",
     "demo:publish": "bash scripts/with-secrets.sh && src/demo/rabbitmq/publish.sh",
     "demo:dlq": "bash scripts/with-secrets.sh && src/demo/rabbitmq/dlq.sh",
-    "demo:duplicate": "bash scripts/with-secrets.sh && src/demo/rabbitmq/duplicate.sh"
+    "demo:duplicate": "bash scripts/with-secrets.sh && src/demo/rabbitmq/duplicate.sh",
+    "demo:outbox": "bash scripts/with-secrets.sh && src/demo/distributed-patterns/outbox.sh",
+    "demo:crash-write": "bash scripts/with-secrets.sh && src/demo/distributed-patterns/crash-write.sh",
+    "demo:crash-relay": "bash scripts/with-secrets.sh && src/demo/distributed-patterns/crash-relay.sh"
   },
   "scarfSettings": {
     "enabled": false
