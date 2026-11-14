@@ -21,10 +21,12 @@ import { Offer } from './entities/offer.entity.js';
 import { OrderLine } from './entities/order-line.entity.js';
 import { OrderRating } from './entities/order-rating.entity.js';
 import { Order } from './entities/order.entity.js';
+import { Outbox } from './entities/outbox.entity.js';
+import { Payment } from './entities/payment.entity.js';
+import { ProcessedMessages } from './entities/processed.entity.js';
 
 import '@dotenvx/dotenvx/config';
 
-import { Payment } from './entities/payment.entity.js';
 import { User } from './entities/user.entity.js';
 
 const typeOrmNamingStrategy = new DefaultNamingStrategy();
@@ -56,6 +58,8 @@ const dataSourceOptions = {
     CartDetail,
     Notification,
     NotificationDelivery,
+    Outbox,
+    ProcessedMessages,
   ],
   namingStrategy: typeOrmNamingStrategy,
 } satisfies DataSourceOptions;

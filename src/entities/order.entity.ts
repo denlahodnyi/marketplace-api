@@ -4,10 +4,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
+  Unique,
 } from 'typeorm';
 
 import type { OrderLine } from './order-line.entity.js';
@@ -68,6 +70,10 @@ export class Order extends primaryAsUuidEntityFactory('orderId') {
   currency: string;
 
   // TODO: coupon_id
+
+  @Column('uuid', { nullable: true })
+  @Index({ unique: true })
+  idempotencyKey: string | null;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: string;

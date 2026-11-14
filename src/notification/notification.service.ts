@@ -5,6 +5,10 @@ import { DataSource, Repository } from 'typeorm';
 import { NotificationDelivery } from '../entities/notification-deliveries.entity.js';
 import { Notification } from '../entities/notification.entity.js';
 import { Order } from '../entities/order.entity.js';
+import {
+  PROCESSED_CONSUMER,
+  ProcessedMessages,
+} from '../entities/processed.entity.js';
 
 @Injectable()
 export class NotificationService {
@@ -23,6 +27,21 @@ export class NotificationService {
         .getRepository(Order)
         .findOneBy({ orderId: data.orderId, status: 'pending' });
       if (!order) throw new NotFoundException("Order doesn't exist");
+
+      const processed = await tx
+        .createQueryBuilder()
+        .insert()
+        .into(ProcessedMessages)
+        .values({
+          messageId: data.eventId,
+          consumer: PROCESSED_CONSUMER.notifications,
+        })
+        .orIgnore() // <-- ON CONFLICT DO NOTHING
+        .returning(['messageId'])
+        .execute();
+
+      if (processed.identifiers.length === 0) return; // duplicate
+
       const notifRes = await tx
         .createQueryBuilder()
         .insert()
