@@ -6,6 +6,7 @@ services:
       - ORDER_NOTIFICATIONS_QUEUE_PREFETCH=${ORDER_NOTIFICATIONS_QUEUE_PREFETCH:-10} # For the demo
       - ENABLE_CRASH_WRITE=${ENABLE_CRASH_WRITE:-false} # For the demo:crash-write
       - ENABLE_CRASH_RELAY=${ENABLE_CRASH_RELAY:-false} # For the demo:crash-relay
+      - ENABLE_CACHE_DEMO_STATS=${ENABLE_CACHE_DEMO_STATS:-false} # For the demo:cache
     expose:
       - "3000"
     ports:
