@@ -2,16 +2,21 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  DefaultValuePipe,
   Get,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   SerializeOptions,
+  Session,
   UseInterceptors,
 } from '@nestjs/common';
 
 import {
+  CatalogListingResponse,
   CreateListingDto,
   ListingResponse,
   UpdateListingDto,
@@ -30,11 +35,25 @@ export class ListingsController {
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({ type: CatalogListingResponse })
+  @Get('all')
+  viewCatalog(
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
+  ) {
+    return this.listingsService.getAllListings({
+      pagination: { limit, offset },
+    });
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ type: ListingResponse })
   @Get(':listingId')
   viewListingWithId(
     @Param('listingId', new ParseUUIDPipe({ version: '7' })) listingId: string,
+    @Session() session: Record<string, any>,
   ): Promise<ListingResponse | null> {
+    session.visits = session.visits ? session.visits + 1 : 1; // for the demo:session
     return this.listingsService.findListingById(listingId);
   }
 
