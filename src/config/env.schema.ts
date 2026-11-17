@@ -19,6 +19,10 @@ export const envSchema = z.object({
   PACT_BROKER_URL: z.url().optional(),
   TYPE_ORM_LOG_LEVEL: z.string().optional(),
   RABBITMQ_URL: z.url({ protocol: /^amqp$/ }),
+  REDIS_URL: z.url({ protocol: /^redis$/ }),
+  REDIS_JOBS_URL: z.url({ protocol: /^redis$/ }),
+  RATE_LIMIT_TTL: z.coerce.number().int().min(0).optional(),
+  RATE_LIMIT_LIMIT: z.coerce.number().int().min(0).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,68 +1,60 @@
+import type { Queue } from 'bullmq';
+
+import { InjectQueue } from '@nestjs/bullmq';
 import {
   Controller,
+  DefaultValuePipe,
   Get,
-  // type OnModuleDestroy,
-  // type OnModuleInit,
+  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
-// import { ConfigService } from '@nestjs/config';
-// import { readFile } from 'node:fs/promises';
-// import pg, { type Pool } from 'pg';
-// import { DataSource } from 'typeorm';
+import { randomUUID } from 'node:crypto';
 
 import { AppService } from './app.service.js';
-// import { type Env } from './config/index.js';
-// import { Listing } from './entities/listing.entity.js';
-
-// const SECRET_FILE = new URL('../secrets/db_password', import.meta.url);
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
-    // private readonly config: ConfigService<Env, true>,
-    // private readonly ds: DataSource,
+    @InjectQueue('demo') private readonly demoQueue: Queue,
   ) {
     this.startTime = Date.now();
   }
 
-  // pool?: Pool;
   startTime?: number;
-
-  // TODO: remove this in future
-  // onModuleInit() {
-  //   this.pool = new pg.Pool({
-  //     connectionString: this.config.get('DB_URL'),
-  //     user: 'app_user',
-  //     password: async () => (await readFile(SECRET_FILE, 'utf8')).trim(),
-  //     max: 3,
-  //   });
-  //   this.pool.on('error', (e) => console.error(e));
-  // }
-
-  // async onModuleDestroy() {
-  //   return this.pool?.end();
-  // }
 
   // TODO: remove this in future
   @Get()
   getHello() {
-    // const listing = await this.ds
-    //   .getRepository(Listing)
-    //   .findOne({ where: { status: 'active' } });
-    // console.log(`🚀 -> AppController -> getHello -> listing:`, listing);
     return this.appService.getHello();
   }
-
-  // TODO: remove this in future
-  // @Get('db')
-  // async getDb() {
-  //   const r = await this.pool?.query('SELECT current_user, now()::text AS now');
-  //   console.log(r?.rows);
-  //   return { uptimeSec: (Date.now() - (this.startTime ?? 0)) / 1000 };
-  // }
 
   @Get('health')
   health() {
     return { ok: true, uptimeSec: (Date.now() - (this.startTime ?? 0)) / 1000 };
+  }
+
+  @Get('demo-queue')
+  async addDemoJob(
+    @Query('jobId') jobId: string,
+    @Query('failedAttempts', new DefaultValuePipe(0), ParseIntPipe)
+    failedAttempts: number,
+  ) {
+    const job = await this.demoQueue.add(
+      'demo-job',
+      { createdAt: new Date().toISOString(), failedAttempts },
+      {
+        jobId: jobId || randomUUID(),
+        attempts: 4,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+          jitter: 0,
+        },
+        delay: 1000,
+        removeOnComplete: false,
+      },
+    );
+    return { id: job.id, data: job.data };
   }
 }

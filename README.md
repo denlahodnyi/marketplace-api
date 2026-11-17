@@ -105,6 +105,18 @@ DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 RABBITMQ_USER=app
 RABBITMQ_PASSWORD=app
 RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbit:5672
+# Redis (cache)
+REDIS_CACHE_HOST=redis
+REDIS_CACHE_PORT=6379
+REDIS_URL=redis://${REDIS_CACHE_HOST}:${REDIS_CACHE_PORT}
+# Redis (jobs)
+REDIS_JOBS_HOST=redis-jobs
+REDIS_JOBS_PORT=6379
+REDIS_JOBS_URL=redis://${REDIS_JOBS_HOST}:${REDIS_JOBS_PORT}
+# Rate limit window in seconds
+RATE_LIMIT_TTL=60
+# Rate limit number of requests per window
+RATE_LIMIT_LIMIT=100
 ```
 
 ### How to start
@@ -286,12 +298,14 @@ docker compose up -d --wait
 <scripts>
 ```
 
-...or with connection url (check DB_URL and BROKER_URL example in .env.example)
+...or with connection url (check DB_URL, BROKER_URL, REDIS_URL, and other examples in .env.example)
 
 ```sh
 docker compose up -d --wait
 export DB_URL=...
 export BROKER_URL=...
+export REDIS_URL=...
+export REDIS_JOBS_URL=...
 export SKIP_VAULT=1
 <script>
 ```

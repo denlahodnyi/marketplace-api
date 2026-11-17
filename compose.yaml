@@ -12,6 +12,10 @@ services:
         condition: service_healthy
       rabbit:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      redis-jobs:
+        condition: service_healthy
 
   db:
     container_name: marketplace_db
@@ -75,6 +79,37 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  redis:
+    container_name: marketplace_redis
+    image: redis:8-alpine
+    ports:
+      - 20120:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # sessions + ratelimit + bullmq
+  redis-jobs:
+    container_name: marketplace_redis-jobs
+    image: redis:8-alpine
+    command:
+      - "redis-server"
+      - "--maxmemory-policy"
+      - "noeviction" # required for BullMQ
+      - "--appendonly" # AOF enabled
+      - "yes"
+      - "--appendfsync" # BullMQ recommendation
+      - "everysec"
+    ports:
+      - 20121:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
 
   restore:
     container_name: marketplace_restore
