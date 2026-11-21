@@ -107,13 +107,18 @@ paths:
       tags:
         - product
       parameters:
-        # TODO: add limit
-        - name: next_cursor
+        - name: cursor
           in: query
-          required: false
           schema:
             type: string
-            description: Opaque token used for pagination
+          required: false
+          description: Opaque token used for pagination
+        - name: limit
+          in: query
+          schema:
+            type: number
+          required: false
+          description: Limit number of returned items
       responses:
         '200':
           description: Get paginated products
@@ -123,7 +128,9 @@ paths:
                 type: object
                 properties:
                   items:
-                    $ref: '#/components/schemas/ProductResponse'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductResponse'
                   next_cursor:
                     type: string
                     nullable: true
@@ -242,7 +249,9 @@ paths:
                 type: object
                 properties:
                   items:
-                    $ref: '#/components/schemas/Order'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
                 required:
                   - items
   /orders/{orderId}:
@@ -292,7 +301,9 @@ paths:
                 type: object
                 properties:
                   items:
-                    $ref: '#/components/schemas/Order'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
                 required:
                   - items
   /sales/{orderId}:

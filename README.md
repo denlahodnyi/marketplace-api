@@ -77,3 +77,11 @@ User stories:
   relations; may need complex analytical queries
 
 ## Decisions journal
+
+## OpenApi specs testing
+
+Spec is tested using Pact.
+
+```sh
+pnpm test:pact
+```
