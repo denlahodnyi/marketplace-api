@@ -10,6 +10,24 @@ import { RMQ_EVENTS, RMQ_TOKENS } from '../rabbitmq-setup.js';
 const WORKERS = 3;
 let CRASHED_RELAY_COUNT = 0;
 
+async function withRetry<T>(fn: () => T, maxAttempts = 3) {
+  for (let i = 1; i <= maxAttempts; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i < maxAttempts) {
+        const backoff = Math.round(
+          2000 * 2 ** i + Math.floor(Math.random() * 500),
+        );
+        await setTimeout(backoff);
+        continue;
+      } else {
+        throw error;
+      }
+    }
+  }
+}
+
 @Injectable()
 export class OutboxService {
   constructor(
@@ -23,19 +41,23 @@ export class OutboxService {
       Array.from(
         { length: WORKERS },
         (_: any, i: number) => `worker-${i + 1}`,
-      ).map(async () => {
-        for (;;) {
-          const client = this.dataSource.createQueryRunner();
-          const task = await this.runRelay(client);
-          if (task.success) {
-            const left = await this.dataSource
-              .getRepository(Outbox)
-              .count({ where: { publishedAt: IsNull() } });
-            if (!left) return;
-            await setTimeout(50);
+      ).map(() =>
+        withRetry(async () => {
+          for (;;) {
+            const client = this.dataSource.createQueryRunner();
+            const task = await this.runRelay(client);
+            if (task.success) {
+              const left = await this.dataSource
+                .getRepository(Outbox)
+                .count({ where: { publishedAt: IsNull() } });
+              if (!left) return;
+              await setTimeout(50);
+            } else if (task.error) {
+              throw task.error;
+            }
           }
-        }
-      }),
+        }),
+      ),
     );
   }
 
@@ -78,10 +100,12 @@ export class OutboxService {
       );
       await client.commitTransaction();
       return { success: true };
-    } catch {
-      // TODO: handle error
+    } catch (e) {
       await client.rollbackTransaction();
-      return { success: false };
+      return {
+        success: false,
+        error: e instanceof Error ? e : new Error('Failed relay run'),
+      };
     } finally {
       client.release();
     }

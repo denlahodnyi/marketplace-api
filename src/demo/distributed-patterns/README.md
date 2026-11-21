@@ -2,7 +2,12 @@
 
 ## Demo #1 (outbox)
 
-In the future outbox table size may be decreased by deleting published records in the background.
+In the future outbox table size may be decreased by deleting published records
+in the background.
+
+Publish must precede `UPDATE publish_at` so that record in DB confirms
+successfully published event, otherwise record marked as already published would
+not cause publish operation to repeat in case of its fail.
 
 ```sh
 pnpm demo:outbox

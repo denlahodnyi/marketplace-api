@@ -40,7 +40,7 @@ export class NotificationService {
         .returning(['messageId'])
         .execute();
 
-      if (processed.identifiers.length === 0) return; // duplicate
+      if (processed.raw.length === 0) return; // duplicate
 
       const notifRes = await tx
         .createQueryBuilder()

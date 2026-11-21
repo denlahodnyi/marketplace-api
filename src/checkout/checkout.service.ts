@@ -133,6 +133,7 @@ export class CheckoutService {
           return {
             // TODO: add shipping details
             // TODO: add customer details
+            idempotencyKey,
             buyerId: userId,
             sellerId,
             currency: lines?.[0].currency, // TODO: currency can differ. Separate orders by seller+currency???
@@ -175,7 +176,7 @@ export class CheckoutService {
       return createdOrders;
     });
 
-    await this.outboxService.relay();
+    await this.outboxService.relay(); // TODO: polling + LISTEN/NOTIFY?
 
     return result;
   }
