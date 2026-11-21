@@ -20,6 +20,8 @@ console.log(output.toString('utf8'));
 
 const LISTING_ID = '01a19801-2d38-73b5-9312-0d738bd16be4';
 const instances = ['api-1', 'api-2'];
+const LIMIT = '3';
+const REQUESTS = 5;
 
 const children = instances.map((instanceId, index) => {
   const child = spawn('pnpm', ['start:dev'], {
@@ -27,7 +29,7 @@ const children = instances.map((instanceId, index) => {
       ...process.env,
       PORT: String(3001 + index),
       RATE_LIMIT_TTL: '60',
-      RATE_LIMIT_LIMIT: '3',
+      RATE_LIMIT_LIMIT: LIMIT,
     },
     stdio: 'ignore',
     shell: false,
@@ -80,7 +82,7 @@ let errorStatus = null;
 let retryAfterExists = false;
 
 await Promise.all(
-  Array.from({ length: 5 }, async (_, i) => {
+  Array.from({ length: REQUESTS }, async (_, i) => {
     const port = i % 2 !== 0 ? 3001 : 3002;
     const resp = await fetch(`http://localhost:${port}/listings/${LISTING_ID}`);
     const status = resp.status;
@@ -96,6 +98,8 @@ await Promise.all(
 );
 
 console.log(`instances=${instances.length}`);
+console.log(`limit=${LIMIT}`);
+console.log(`requests=${REQUESTS}`);
 console.log(`allowed=${passed}`);
 console.log(`blocked=${blocked}`);
 console.log(`status=${errorStatus}`);

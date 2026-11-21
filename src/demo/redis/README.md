@@ -27,7 +27,7 @@ Expected output:
 
 ```sh
 cache-maxmemory=1
-maxmemory-policy=1
+cache-lru=1
 warmed=50
 ttl-distinct=50
 concurrent=20
@@ -73,6 +73,8 @@ Expected output:
 
 ```sh
 instances=2
+limit=3
+requests=5
 allowed=3
 blocked=2
 status=429
@@ -97,6 +99,7 @@ Expected output:
 
 ```sh
 queue-noeviction=1
+completed=1
 attempts=4
 added=2
 queued=1

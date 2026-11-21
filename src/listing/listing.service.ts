@@ -93,7 +93,7 @@ export class ListingsService {
     for (let i = 0; i < 5; i++) {
       await setTimeout(1000);
       const retryHit = await this.cache.get(cacheKey);
-      if (retryHit) return hit as Listing | null;
+      if (retryHit) return retryHit as Listing | null;
     }
 
     // Fallback

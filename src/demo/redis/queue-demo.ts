@@ -37,7 +37,11 @@ const repeatedJobs = await Promise.all(
     return result as { data: { id: number; data: object } };
   }),
 );
+await setTimeout(2000);
 const uniqueAddedJobs = new Set(repeatedJobs.map((j) => j.data.id));
+const attemptsOfDupJob = await redisJobs.hGet(`queue:demo:${JOB_ID}`, 'ats');
+const returnedVal = await redisJobs.hGet(`queue:demo:${JOB_ID}`, 'returnvalue');
+const completed = returnedVal === '{"success":true}' ? attemptsOfDupJob : 0;
 
 const schedulersCount = await redisJobs.zCount(
   'queue:demo:repeat',
@@ -50,6 +54,7 @@ console.log(
   `queue-noeviction=${config['maxmemory-policy'] === 'noeviction' ? 1 : 0}`,
 );
 console.log(`attempts=${attempts}`);
+console.log(`completed=${completed}`);
 console.log(`added=${REPEATED_JOBS}`);
 console.log(`queued=${uniqueAddedJobs.size}`);
 console.log(`schedulers=${schedulersCount}`);

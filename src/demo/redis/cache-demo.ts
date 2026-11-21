@@ -68,9 +68,7 @@ await Promise.all(
 const dbWarmHits = await redis.get(`listing:${listingIds[0]}:dbHits`);
 
 console.log(`cache-maxmemory=${config.maxmemory !== '0' ? 1 : 0}`);
-console.log(
-  `maxmemory-policy=${config['maxmemory-policy'] !== 'noeviction' ? 1 : 0}`,
-);
+console.log(`cache-lru=${config['maxmemory-policy'] !== 'noeviction' ? 1 : 0}`);
 console.log(`warmed=${warmedCount}`);
 console.log(`ttl-distinct=${distinctTTLs.size}`);
 console.log(`concurrent=${reqs}`);
