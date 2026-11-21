@@ -76,6 +76,38 @@ export class ListingResponse {
   }
 }
 
+export class CatalogListingResponse {
+  listingId: string;
+  userId: string;
+  categoryId: string;
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  quantity: number;
+  status: string;
+  sellingMethod: string;
+  itemCondition: string;
+  createdAt: string;
+  category: {
+    categoryId: string;
+    name: string;
+    parentCategory: {
+      categoryId: string;
+      name: string;
+    } | null;
+  };
+
+  @Exclude()
+  searchVector: string;
+  @Exclude()
+  deletedAt: string;
+
+  constructor(partial: Partial<Listing>) {
+    Object.assign(this, partial);
+  }
+}
+
 export class DeclineListingDto {
   @IsString()
   @MaxLength(250)
