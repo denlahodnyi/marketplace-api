@@ -14,6 +14,7 @@ import { dataSourceOptions } from './data-source.js';
 import { ListingsModule } from './listing/listing.module.js';
 import { OrderModule } from './order/order.module.js';
 import { NotificationModule } from './notification/notification.module.js';
+import { OutboxModule } from './outbox/outbox.module.js';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { NotificationModule } from './notification/notification.module.js';
     CheckoutModule,
     OrderModule,
     NotificationModule,
+    OutboxModule,
   ],
   controllers: [AppController],
   providers: [AppService],

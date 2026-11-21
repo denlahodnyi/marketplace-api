@@ -16,7 +16,7 @@ export const RMQ_EVENTS = {
 
 export type OrderCreatedMessage = {
   orderId: string;
-  occurredAt: string;
+  placedAt: string;
 };
 
 const PREFETCH = 100;

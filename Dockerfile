@@ -1,4 +1,4 @@
-FROM node:24-slim AS base
+FROM node:24.22.2-slim AS base
 RUN npm i -g pnpm@12
 
 FROM base AS builder
