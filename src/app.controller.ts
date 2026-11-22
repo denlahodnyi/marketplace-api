@@ -11,6 +11,7 @@ import {
 import { randomUUID } from 'node:crypto';
 
 import { AppService } from './app.service.js';
+import { IsPublic } from './auth/public.decorator.js';
 
 @Controller()
 export class AppController {
@@ -24,16 +25,19 @@ export class AppController {
   startTime?: number;
 
   // TODO: remove this in future
+  @IsPublic()
   @Get()
   getHello() {
     return this.appService.getHello();
   }
 
+  @IsPublic()
   @Get('health')
   health() {
     return { ok: true, uptimeSec: (Date.now() - (this.startTime ?? 0)) / 1000 };
   }
 
+  @IsPublic()
   @Get('demo-queue')
   async addDemoJob(
     @Query('jobId') jobId: string,

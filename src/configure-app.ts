@@ -1,6 +1,7 @@
 import type { ValidationError } from 'class-validator';
 
 import { ValidationPipe, type INestApplication } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 import { ValidationException } from './common/exceptions.js';
 import { ProblemFilter } from './common/filters/problem.filter.js';
@@ -8,6 +9,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 
 export default function configureApp(app: INestApplication) {
   app.enableShutdownHooks();
+  app.use(cookieParser());
   app.useGlobalFilters(new ProblemFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, exceptionFactory }));

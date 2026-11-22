@@ -15,6 +15,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 
+import type { UserInRequest } from '../common/app.js';
+
+import { IsPublic } from '../auth/public.decorator.js';
+import { User } from '../auth/user.decorator.js';
 import {
   CatalogListingResponse,
   CreateListingDto,
@@ -34,6 +38,7 @@ export class ListingsController {
     return this.listingsService.createListing(body);
   }
 
+  @IsPublic()
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ type: CatalogListingResponse })
   @Get('all')
@@ -46,6 +51,7 @@ export class ListingsController {
     });
   }
 
+  @IsPublic()
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ type: ListingResponse })
   @Get(':listingId')
@@ -63,7 +69,8 @@ export class ListingsController {
   modifyListingWithId(
     @Param('listingId', new ParseUUIDPipe({ version: '7' })) listingId: string,
     @Body() body: UpdateListingDto,
+    @User() user: UserInRequest,
   ): Promise<ListingResponse> {
-    return this.listingsService.updateListing(listingId, body);
+    return this.listingsService.updateListing(listingId, body, user);
   }
 }

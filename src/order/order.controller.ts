@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  Get,
   Header,
   Headers,
   Param,
@@ -22,6 +23,11 @@ export class OrderController {
     private readonly orderService: OrderService,
     private readonly orderEventsService: OrderEventsService,
   ) {}
+
+  // @Get(':orderId')
+  // viewOrderById() {
+
+  // }
 
   @Patch(':orderId/actions/status-change')
   async modifyOrderStatus(

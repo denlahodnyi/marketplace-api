@@ -33,7 +33,7 @@ export class Outbox_1794595292823 implements MigrationInterface {
             CREATE TABLE "processed_messages" (
                 "message_id" uuid NOT NULL DEFAULT uuidv7(),
                 "consumer" text NOT NULL,
-                "processed_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT 'now()',
+                "processed_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 CONSTRAINT "PK_d4853eee97acfc588e49f9290d1" PRIMARY KEY ("message_id", "consumer")
             )
         `);

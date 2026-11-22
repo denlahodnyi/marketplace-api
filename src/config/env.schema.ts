@@ -23,6 +23,14 @@ export const envSchema = z.object({
   REDIS_JOBS_URL: z.url({ protocol: /^redis$/ }),
   RATE_LIMIT_TTL: z.coerce.number().int().min(0).optional(),
   RATE_LIMIT_LIMIT: z.coerce.number().int().min(0).optional(),
+  JWT_KID: z.string().min(1),
+  JWT_PRIVATE_KEY: z.base64(),
+  JWT_PUBLIC_KEY: z.base64(),
+  JWT_PUBLIC_KEYS: z.base64().optional(),
+  // JWT_HS_SECRET: z.base64(),
+  REFRESH_TOKEN_PEPPER: z.base64(),
+  JWT_TTL_SEC: z.coerce.number().min(1),
+  REFRESH_TOKEN_TTL_SEC: z.coerce.number().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

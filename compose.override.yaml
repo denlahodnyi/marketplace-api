@@ -7,6 +7,10 @@ services:
       - ENABLE_CRASH_WRITE=${ENABLE_CRASH_WRITE:-false} # For the demo:crash-write
       - ENABLE_CRASH_RELAY=${ENABLE_CRASH_RELAY:-false} # For the demo:crash-relay
       - ENABLE_CACHE_DEMO_STATS=${ENABLE_CACHE_DEMO_STATS:-false} # For the demo:cache
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}
+      - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
+      - JWT_KID=${JWT_KID}
+      - REFRESH_TOKEN_PEPPER=${REFRESH_TOKEN_PEPPER}
     expose:
       - "3000"
     ports:

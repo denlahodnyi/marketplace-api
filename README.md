@@ -288,6 +288,37 @@ curl -s 'http://127.0.0.1:20201/can-i-deploy?pacticipant=web&version=1.0.0&to=pr
 docker compose --profile pact down -v
 ```
 
+## Auth
+
+| Змінна                 | Що це                                                  | Джерело | Формат                 |
+| ---------------------- | ------------------------------------------------------ | ------- | ---------------------- |
+| `JWT_KID`              | active verification key id                             | storage | string (`k1`, `k2`, …) |
+| `JWT_PRIVATE_KEY`      | private key                                            | storage | base64 from SPKI PEM   |
+| `JWT_PUBLIC_KEY`       | public key                                             | storage | base64 from SPKI PEM   |
+| `JWT_PUBLIC_KEYS`      | object with all kid - public keys: `{kid: public PEM}` | storage | base64 from JSON       |
+| `REFRESH_TOKEN_PEPPER` | pepper for refresh token hashing                       | storage | base64, 32 bytes       |
+| `JWT_HS_SECRET`        | symmetric key (only for HS256; is not used here)       | storage | base64, 32 bytes       |
+
+For keys I have selected ES256 – asymmetric, smaller size and faster
+verification than RS256. Also RS256 is not recommended by the OWASP.
+
+Resource ownership is checked at service level.
+
+User role stored in the token is a cache – it cannot be used to check role,
+because it exists in frozen state, which may differ with the state in DB.
+
+Logout is 2 steps: revoke access token (via denylist), revoke all refresh tokens
+(from the same family). Unrevoked refresh token still allows getting new pair.
+
+Two parallel requests for token refreshing could try to refresh the same token.
+To prevent that issue I use short (1s) window that allows re-using the same cached pair
+during repeated refreshing.
+
+Keys should be rotated using overlap rotation – manual rotation that keeps old,
+but not expired keys that are still in use. Otherwise, killing old keys would
+cause simultaneous logout for all sessions. Kid allows verifier to use key
+specified in token header.
+
 ## Grading
 
 There is no secrets storage, so credentials are taken from .env (see
@@ -301,11 +332,23 @@ docker compose up -d --wait
 ...or with connection url (check DB_URL, BROKER_URL, REDIS_URL, and other examples in .env.example)
 
 ```sh
-docker compose up -d --wait
+# one-time pair of RS256 for the run; PEM goes to base64 so that multi-line doesn't go away
+node -e 'const {generateKeyPairSync}=require("node:crypto");
+const k=generateKeyPairSync("ec",{namedCurve:"P-256",
+  privateKeyEncoding:{type:"pkcs8",format:"pem"},
+  publicKeyEncoding:{type:"spki",format:"pem"}});
+const fs=require("node:fs");
+fs.writeFileSync("/tmp/priv.b64",Buffer.from(k.privateKey).toString("base64"));
+fs.writeFileSync("/tmp/pub.b64",Buffer.from(k.publicKey).toString("base64"));'
 export DB_URL=...
 export BROKER_URL=...
 export REDIS_URL=...
 export REDIS_JOBS_URL=...
 export SKIP_VAULT=1
+export JWT_KID=grader
+export JWT_PRIVATE_KEY="$(cat /tmp/priv.b64)"
+export JWT_PUBLIC_KEY="$(cat /tmp/pub.b64)"
+export REFRESH_TOKEN_PEPPER=grader-pepper
+docker compose up -d --wait
 <script>
 ```

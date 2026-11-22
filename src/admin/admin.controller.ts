@@ -7,23 +7,29 @@ import {
   ParseUUIDPipe,
   Put,
   SerializeOptions,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 
+import { Roles } from '../auth/roles.decorator.js';
+import { RolesGuard } from '../auth/roles.guard.js';
 import { ListingResponse, DeclineListingDto } from '../listing/listing.dto.js';
 import { ListingsService } from '../listing/listing.service.js';
 
+@UseGuards(RolesGuard)
 @Controller('admin')
 export class AdminController {
   constructor(private readonly listingService: ListingsService) {}
-  // TODO: only admin can see this
+
+  @Roles(['admin'])
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({ type: ListingResponse })
   @Get('moderation/listings')
   viewOnReviewListings(): Promise<ListingResponse[]> {
     return this.listingService.getOnReviewListings();
   }
-  // TODO: only admin can see this
+
+  @Roles(['admin'])
   @Put('moderation/listings/:listingId/actions/decline')
   declineListing(
     @Param('listingId', new ParseUUIDPipe({ version: '7' })) listingId: string,
@@ -34,7 +40,7 @@ export class AdminController {
     return this.listingService.declineListing(listingId, adminId, body.reason);
   }
 
-  // TODO: only admin can see this
+  @Roles(['admin'])
   @Put('moderation/listings/:listingId/actions/approve')
   approveListing(
     @Param('listingId', new ParseUUIDPipe({ version: '7' })) listingId: string,
