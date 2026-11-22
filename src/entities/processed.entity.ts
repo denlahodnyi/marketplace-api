@@ -12,6 +12,9 @@ export class ProcessedMessages {
   @PrimaryColumn('text')
   consumer: string;
 
-  @Column('timestamp with time zone', { nullable: false, default: 'now()' })
+  @Column('timestamp with time zone', {
+    nullable: false,
+    default: () => 'now()',
+  })
   processedAt: string;
 }

@@ -5,12 +5,19 @@ import { NestFactory } from '@nestjs/core';
 import { RedisStore } from 'connect-redis';
 import session from 'express-session';
 
+import type { UserInRequest } from './common/app.js';
 import type { Env } from './config/index.js';
 
 import { AppModule } from './app.module.js';
 import configureApp from './configure-app.js';
 import { getRabbitMqConfig } from './rabbitmq-setup.js';
 import { REDIS_JOBS_CLIENT } from './redis/redis.module.js';
+
+declare module 'express' {
+  export interface Request {
+    user: UserInRequest;
+  }
+}
 
 const SESSION_TTL = 60 * 15; // 15m
 

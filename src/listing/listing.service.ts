@@ -1,11 +1,19 @@
 import type { RedisClientType } from '@keyv/redis';
+import type { Request } from 'express';
 
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { Repository, DataSource } from 'typeorm';
+
+import type { UserInRequest } from '../common/app.js';
 
 import { Listing } from '../entities/listing.entity.js';
 import { ListingAdminReview } from '../entities/listingAdminReview.entity.js';
@@ -27,9 +35,17 @@ export class ListingsService {
     return this.listingsRepo.save(l);
   }
 
-  async updateListing(listingId: string, updatedListing: Partial<Listing>) {
-    const listing = await this.listingsRepo.findOneBy({ listingId });
+  async updateListing(
+    listingId: string,
+    updatedListing: Partial<Listing>,
+    user: UserInRequest,
+  ) {
+    const listing = await this.listingsRepo.findOne({
+      where: { listingId },
+      relations: { user: true },
+    });
     if (!listing) throw new NotFoundException("Listing doesn't exist");
+    if (listing?.user.userId !== user.userId) throw new ForbiddenException();
     if (updatedListing.categoryId)
       listing.categoryId = updatedListing.categoryId;
     if (updatedListing.currency) listing.currency = updatedListing.currency;

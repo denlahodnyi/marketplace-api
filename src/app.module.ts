@@ -18,6 +18,8 @@ import { createNodeRedisClient } from 'bullmq';
 import { AdminModule } from './admin/admin.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { AuthModule } from './auth/auth.module.js';
+import { JwtAuthGuard } from './auth/jwt-auth.guard.js';
 import { CartModule } from './cart/cart.module.js';
 import { CheckoutModule } from './checkout/checkout.module.js';
 import { validateEnv, type Env } from './config/index.js';
@@ -33,6 +35,7 @@ import {
   REDIS_JOBS_CLIENT,
   RedisModule,
 } from './redis/redis.module.js';
+import { UserModule } from './user/user.module.js';
 
 @Module({
   imports: [
@@ -106,10 +109,13 @@ import {
     OrderModule,
     NotificationModule,
     OutboxModule,
+    AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
     AppService,
     DemoQueueConsumer,
     DemoSchedulerService,

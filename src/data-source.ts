@@ -11,6 +11,7 @@ import { CartDetail } from './entities/cart-details.entity.js';
 import { Cart } from './entities/cart.entity.js';
 import { Category } from './entities/category.entity.js';
 import { Chat } from './entities/chat.entity.js';
+import { DeniedTokens } from './entities/denied-tokens.entity.js';
 import { FavouriteListing } from './entities/favourite-listing.entity.js';
 import { Listing } from './entities/listing.entity.js';
 import { ListingAdminReview } from './entities/listingAdminReview.entity.js';
@@ -24,10 +25,10 @@ import { Order } from './entities/order.entity.js';
 import { Outbox } from './entities/outbox.entity.js';
 import { Payment } from './entities/payment.entity.js';
 import { ProcessedMessages } from './entities/processed.entity.js';
+import { RefreshToken } from './entities/refresh-token.entity.js';
+import { User } from './entities/user.entity.js';
 
 import '@dotenvx/dotenvx/config';
-
-import { User } from './entities/user.entity.js';
 
 const typeOrmNamingStrategy = new DefaultNamingStrategy();
 typeOrmNamingStrategy.columnName = (propertyName, customName) =>
@@ -60,6 +61,8 @@ const dataSourceOptions = {
     NotificationDelivery,
     Outbox,
     ProcessedMessages,
+    RefreshToken,
+    DeniedTokens,
   ],
   namingStrategy: typeOrmNamingStrategy,
 } satisfies DataSourceOptions;
