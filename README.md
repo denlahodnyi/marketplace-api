@@ -101,6 +101,10 @@ DB_PORT=5433
 DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 # (optional) Pact broker
 # PACT_BROKER_URL=http://127.0.0.1:20201
+# RabbitMQ
+RABBITMQ_USER=app
+RABBITMQ_PASSWORD=app
+RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbit:5672
 ```
 
 ### How to start
@@ -282,11 +286,12 @@ docker compose up -d --wait
 <scripts>
 ```
 
-...or with connection url (check DB_URL example in .env.example)
+...or with connection url (check DB_URL and BROKER_URL example in .env.example)
 
 ```sh
 docker compose up -d --wait
 export DB_URL=...
+export BROKER_URL=...
 export SKIP_VAULT=1
 <script>
 ```

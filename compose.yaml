@@ -10,6 +10,8 @@ services:
     depends_on:
       pgbouncer:
         condition: service_healthy
+      rabbit:
+        condition: service_healthy
 
   db:
     container_name: marketplace_db
@@ -133,6 +135,35 @@ services:
       interval: 3s
       timeout: 3s
       retries: 30
+
+  rabbit:
+    container_name: marketplace_rabbitmq
+    image: rabbitmq:4.3.4-management-alpine
+    ports:
+      - 20300:5672
+      - 20301:15672 # Management UI
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+      - ./infra/rabbitmq/init.sh:/rabbit_init.sh
+    post_start:
+      - command: "./rabbit_init.sh"
+        user: rabbitmq
+        privileged: true
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_port_connectivity",
+        ]
+      interval: 30s
+      start_interval: 10s
+      start_period: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   marketplace_db:

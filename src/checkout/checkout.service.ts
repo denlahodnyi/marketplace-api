@@ -1,5 +1,13 @@
-import { ConflictException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 import { DataSource, In } from 'typeorm';
+import { v7 as uuidV7 } from 'uuid';
 
 import type { ProblemJson } from '../common/filters/problem.filter.js';
 
@@ -10,6 +18,11 @@ import { Listing } from '../entities/listing.entity.js';
 import { OrderLine } from '../entities/order-line.entity.js';
 import { Order } from '../entities/order.entity.js';
 import { Payment } from '../entities/payment.entity.js';
+import {
+  RMQ_EVENTS,
+  RMQ_TOKENS,
+  type OrderCreatedMessage,
+} from '../rabbitmq-setup.js';
 
 interface CheckoutDetails {
   shippingAddress: {
@@ -22,12 +35,16 @@ interface CheckoutDetails {
 
 @Injectable()
 export class CheckoutService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    @Inject(RMQ_TOKENS.ordersNotifications)
+    private readonly rmq: ClientProxy,
+    private readonly dataSource: DataSource,
+  ) {}
 
   getCheckout() {}
 
   async confirmCheckout(userId: string) {
-    return await this.dataSource.transaction(async (tx) => {
+    const result = await this.dataSource.transaction(async (tx) => {
       const cart = await tx.getRepository(Cart).findOne({
         where: { userId },
         relations: { details: { listing: true } },
@@ -142,5 +159,15 @@ export class CheckoutService {
 
       return createdOrders;
     });
+    for (const o of result) {
+      const message = new RmqRecordBuilder({
+        orderId: o.orderId,
+        occurredAt: new Date().toISOString(),
+      } satisfies OrderCreatedMessage)
+        .setOptions({ messageId: uuidV7(), type: RMQ_EVENTS.orderCreated })
+        .build();
+      await lastValueFrom(this.rmq.emit(RMQ_EVENTS.orderCreated, message));
+    }
+    return result;
   }
 }

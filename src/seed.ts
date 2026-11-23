@@ -20,8 +20,9 @@ const parsedArgs = getArgs();
 const listingsArg = Number(parsedArgs.listings);
 const ordersArg = Number(parsedArgs.orders);
 
-const LISTINGS_COUNT = listingsArg > 0 ? listingsArg : 20_000;
-const ORDERS_COUNT = ordersArg > 0 ? ordersArg : 50_000;
+const SHOW_PROGRESS = parsedArgs.progress !== 'false';
+const LISTINGS_COUNT = listingsArg >= 0 ? listingsArg : 20_000;
+const ORDERS_COUNT = ordersArg >= 0 ? ordersArg : 50_000;
 console.log('LISTINGS_COUNT=', LISTINGS_COUNT);
 console.log('ORDERS_COUNT=', ORDERS_COUNT);
 
@@ -34,9 +35,21 @@ const LOW_PRICE_MAX = 20;
 const NORMAL_PRICE_MIN = 100;
 const NORMAL_PRICE_MAX = 50_000;
 
-const ORDER_AMOUNT_MIN = 100;
-const ORDER_AMOUNT_MAX = 10_000;
+// const ORDER_AMOUNT_MIN = 100;
+// const ORDER_AMOUNT_MAX = 10_000;
 const LISTINGS_SKEW = 2; // orders distribution: 1 = uniform, 2 = skewed
+
+const IDS = {
+  customers: [
+    '01a191ce-5236-728b-a164-31384e5163a9',
+    '01a191ce-5236-72b5-bc74-1c94df1e59ac',
+  ],
+  admins: ['01a191ce-5235-7e4f-970a-3abbdc19ef15'],
+  listings: [
+    '01a19801-2d38-73b5-9312-0d738bd16be4',
+    '01a191ce-5236-72dd-b786-f16614df1980',
+  ],
+};
 
 const CATEGORIES = [
   { name: 'Електроніка' },
@@ -127,6 +140,7 @@ function coercePrice(price: number) {
 
 let progress = 0;
 function logProgress() {
+  if (!SHOW_PROGRESS) return;
   progress += 1;
   // 12 save()
   console.log(`Progress: ${Math.floor((progress / 12) * 100)}%`);
@@ -148,6 +162,7 @@ await dataSource.manager.transaction(async (em) => {
     Object.keys(USERS.surnames),
   ).map(([name, surname], i) => {
     const user = new User();
+    if (IDS.customers[i]) user.userId = IDS.customers[i];
     user.userRole = 'customer';
     user.name = `${name} ${surname}`;
     user.email =
@@ -163,6 +178,7 @@ await dataSource.manager.transaction(async (em) => {
   });
   USERS.admins.forEach((name, i) => {
     const admin = new User();
+    if (IDS.admins[i]) admin.userId = IDS.admins[i];
     admin.name = name;
     admin.userRole = 'admin';
     admin.email = `admin_${i + 1}@example.com`;
@@ -176,7 +192,11 @@ await dataSource.manager.transaction(async (em) => {
 
   for (let i = 0; i < LISTINGS_COUNT; i++) {
     const category = readyCategories[i % readyCategories.length];
-    const seller = customers[i % customers.length];
+    const seller =
+      // Take customer with predefined ID
+      IDS.customers[0] && i < IDS.listings.length
+        ? IDS.customers[0]
+        : customers[i % customers.length].userId;
     const price =
       Math.random() * 100 < LOW_PRICE_PERCENT
         ? (LOW_PRICE_MIN + Math.random() * (LOW_PRICE_MAX - LOW_PRICE_MIN)) /
@@ -192,16 +212,17 @@ await dataSource.manager.transaction(async (em) => {
           : 'auction';
     const title = LISTING_TITLES[i % LISTING_TITLES.length] + ` #${i + 1}`;
     const listing = new Listing();
+    if (IDS.listings[i]) listing.listingId = IDS.listings[i];
     listing.category = category;
     listing.title = title;
-    listing.user = seller;
+    listing.userId = seller;
     listing.sellingMethod = sellingMethod;
     listing.currency = 'UAH';
     listing.price = coercePrice(price);
     listing.itemCondition = Math.random() < 0.55 ? 'used' : 'new';
     listing.description =
       'Якісний товар. Детальний опис буде доступний покупцю перед оформленням замовлення.';
-    listing.quantity = 1 + Math.floor(Math.random() * 5);
+    listing.quantity = IDS.listings[i] ? 20 : 1 + Math.floor(Math.random() * 5);
     listing.status = 'active';
     prepListings.push(listing);
   }

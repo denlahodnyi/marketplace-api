@@ -18,6 +18,7 @@ export const envSchema = z.object({
     .optional(),
   PACT_BROKER_URL: z.url().optional(),
   TYPE_ORM_LOG_LEVEL: z.string().optional(),
+  RABBITMQ_URL: z.url({ protocol: /^amqp$/ }),
 });
 
 export type Env = z.infer<typeof envSchema>;

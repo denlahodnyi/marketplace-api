@@ -15,14 +15,17 @@ import { FavouriteListing } from './entities/favourite-listing.entity.js';
 import { Listing } from './entities/listing.entity.js';
 import { ListingAdminReview } from './entities/listingAdminReview.entity.js';
 import { ChatMessage } from './entities/message.entity.js';
+import { NotificationDelivery } from './entities/notification-deliveries.entity.js';
+import { Notification } from './entities/notification.entity.js';
 import { Offer } from './entities/offer.entity.js';
 import { OrderLine } from './entities/order-line.entity.js';
 import { OrderRating } from './entities/order-rating.entity.js';
 import { Order } from './entities/order.entity.js';
-import { Payment } from './entities/payment.entity.js';
-import { User } from './entities/user.entity.js';
 
 import '@dotenvx/dotenvx/config';
+
+import { Payment } from './entities/payment.entity.js';
+import { User } from './entities/user.entity.js';
 
 const typeOrmNamingStrategy = new DefaultNamingStrategy();
 typeOrmNamingStrategy.columnName = (propertyName, customName) =>
@@ -51,6 +54,8 @@ const dataSourceOptions = {
     OrderRating,
     Cart,
     CartDetail,
+    Notification,
+    NotificationDelivery,
   ],
   namingStrategy: typeOrmNamingStrategy,
 } satisfies DataSourceOptions;
