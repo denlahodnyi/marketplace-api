@@ -21,7 +21,7 @@ curl localhost:3000/checkout -s \
 
 wait_deliveries() {
   local max_attempts=10
-  local delay=0.5
+  local delay=1.5
   local attempt=1
 
   while (( attempt <= max_attempts )); do

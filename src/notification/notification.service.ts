@@ -39,7 +39,7 @@ export class NotificationService {
         .returning(['notificationId'])
         .execute();
 
-      if (notifRes?.generatedMaps?.[0]) {
+      if (notifRes.generatedMaps[0]?.notificationId) {
         await tx
           .createQueryBuilder()
           .insert()

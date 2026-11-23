@@ -19,7 +19,7 @@ Expected output:
 ```sh
 published=5
 delivered=5
-effects=5
+effect=5
 acked=5
 dlq=0
 prefetch=100
@@ -39,7 +39,7 @@ Expected output:
 prefetch=1
 work=1
 dlq=1
-effects=1
+effect=1
 dlq-reason=maxlen
 ```
 

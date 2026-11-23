@@ -15,7 +15,7 @@ docker compose exec -T rabbit rabbitmqctl set_policy demo-dlx "marketplace.order
 
 wait_for_rabbitmq_policy() {
   local max_attempts=10
-  local delay=0.5
+  local delay=1.5
   local attempt=1
 
   while (( attempt <= max_attempts )); do
@@ -86,8 +86,7 @@ fi
 prefetch=$(curl -s -u app:app 'http://localhost:20301/api/consumers/%2F?columns=prefetch_count,queue.name' | jq '.[] | select(.queue.name == "marketplace.orders.notifications") | .prefetch_count')
 stats=$(curl -s -u app:app 'http://localhost:20301/api/queues/%2F/marketplace.orders.notifications?columns=name,delivery_limit,messages,messages_dlx,message_stats.publish,message_stats.deliver,message_stats.ack')
 stats_dlq=$(curl -s -u app:app 'http://localhost:20301/api/queues/%2F/marketplace.dlq?columns=name,delivery_limit,messages,messages_dlx,message_stats.publish,message_stats.deliver,message_stats.ack')
-
-work=$(echo "$stats" | jq -e '.messages // 0')
+work=$(echo "$stats" | jq -e '.message_stats.deliver // 0') # .deliver always shows number, while .messages is always 0
 dlq=$(echo "$stats_dlq" | jq -e '.message_stats.deliver // 0')
 effect=$(docker compose exec -T db psql -p 5432 -U admin -h 127.0.0.1 -d market -q -t -A -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) FROM notifications;")
 reason=$(

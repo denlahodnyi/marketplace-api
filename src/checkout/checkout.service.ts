@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 import { DataSource, In } from 'typeorm';
 import { v7 as uuidV7 } from 'uuid';
 
@@ -158,15 +159,15 @@ export class CheckoutService {
 
       return createdOrders;
     });
-    result.forEach((o) => {
+    for (const o of result) {
       const message = new RmqRecordBuilder({
         orderId: o.orderId,
         occurredAt: new Date().toISOString(),
       } satisfies OrderCreatedMessage)
         .setOptions({ messageId: uuidV7(), type: RMQ_EVENTS.orderCreated })
         .build();
-      this.rmq.emit(RMQ_EVENTS.orderCreated, message);
-    });
+      await lastValueFrom(this.rmq.emit(RMQ_EVENTS.orderCreated, message));
+    }
     return result;
   }
 }
